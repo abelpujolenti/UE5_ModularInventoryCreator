@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "TESTHud.generated.h"
 
+class UGrid;
 class UInventoryWidgetBase;
 /**
  * 
@@ -17,22 +18,35 @@ class MODULARINVENTORYCREATOR_API ATESTHud : public AHUD
 public:
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UInventoryWidgetBase> inventoryWidgetClass = nullptr;
+	TSubclassOf<UGrid> inventoryWidgetClass = nullptr;
 
 private:
 
 	virtual void BeginPlay() override;
 
-	virtual void Tick(float DeltaSeconds) override;
-
 	UPROPERTY()
-	TObjectPtr<UWorld> _world = nullptr;
+	TObjectPtr<UGrid> _inventoryWidget = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FVector2D _gridPivot;
 
-	UPROPERTY()
-	TObjectPtr<UInventoryWidgetBase> _inventoryWidget = nullptr;
+	UPROPERTY(EditDefaultsOnly)
+	FVector2D _gridDimensions;
 
-	UPROPERTY(EditInstanceOnly)
-	float _size;
+	UPROPERTY(EditDefaultsOnly)
+	float _gridHorizontalMargin;
+
+	UPROPERTY(EditDefaultsOnly)
+	float _gridVerticalMargin;
+
+	UPROPERTY(EditDefaultsOnly)
+	float _cellSize;
+
+	UPROPERTY(EditDefaultsOnly)
+	float _cellSpace;
+
+	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 1, UIMin = 1))
+	int _extraLines;
 	
 	GENERATED_BODY()
 };

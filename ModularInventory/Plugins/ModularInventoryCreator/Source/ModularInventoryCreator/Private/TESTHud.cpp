@@ -4,26 +4,21 @@
 #include "TESTHud.h"
 
 #include "InventoryWidgetBase.h"
+#include "Grid.h"
 
 void ATESTHud::BeginPlay()
 {
 	Super::BeginPlay();
 
-	_world = GetWorld();
+	TObjectPtr<UWorld> world = GetWorld();
 
-	checkf(_world, TEXT("Unable to get a reference of the world"));
+	checkf(world, TEXT("Unable to get a reference of the world"));
 
 	checkf(inventoryWidgetClass, TEXT("Invalid InventoryWidgetClass"));
-
-	_inventoryWidget = CreateWidget<UInventoryWidgetBase>(_world, inventoryWidgetClass);
+	
+	_inventoryWidget = CreateWidget<UGrid>(world, inventoryWidgetClass);
 	_inventoryWidget->AddToViewport();
 	_inventoryWidget->SetVisibility(ESlateVisibility::Visible);
-	_inventoryWidget->UpdateCellSize(_size);
-}
-
-void ATESTHud::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	_inventoryWidget->UpdateCellSize(_size);
+	_inventoryWidget->SetGrid(world, _gridPivot, _gridDimensions, _gridHorizontalMargin, _gridVerticalMargin, _cellSize,
+		_cellSpace / 2, _extraLines * 2);
 }

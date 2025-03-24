@@ -17,12 +17,10 @@ class MODULARINVENTORYCREATOR_API UCell : public UInventoryWidgetBase
 public:
 
 	void SetCellSize(float newSize) const;
-	
-	virtual void UpdateCellSize(float size) override;	
 
 protected:
 
-	UPROPERTY(BlueprintReadOnly, Category = "Constituent Controls", meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UImage> BackgroundCellImage = nullptr;
 	
 private:
