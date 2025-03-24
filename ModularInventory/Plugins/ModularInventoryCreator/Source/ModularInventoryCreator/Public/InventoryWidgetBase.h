@@ -18,8 +18,6 @@ public:
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
 #endif
-
-	virtual void UpdateCellSize(float size) PURE_VIRTUAL(UInventoryWidgetBase::UpdateCellSize);
 	
 private:	
 	GENERATED_BODY()
