@@ -3,11 +3,22 @@
 
 #include "Cell.h"
 
-#include "CustomLog.h"
-
 #include "Components/Image.h"
 
-void UCell::SetCellSize(float newSize) const
+void UCell::NativeOnInitialized()
 {
-	BackgroundCellImage->SetBrushSize(FVector2D(newSize, newSize));
+	Super::NativeOnInitialized();
+
+	_cellSize = _backgroundCellImage->GetBrush().GetImageSize();
+}
+
+void UCell::SetCellSize(FVector2D newSize)
+{
+	_backgroundCellImage->SetBrushSize(newSize);
+	_cellSize = newSize;
+}
+
+FVector2D UCell::GetCellSize() const
+{
+	return _cellSize;
 }

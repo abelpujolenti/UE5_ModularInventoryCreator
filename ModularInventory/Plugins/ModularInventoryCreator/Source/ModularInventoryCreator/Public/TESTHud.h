@@ -18,35 +18,14 @@ class MODULARINVENTORYCREATOR_API ATESTHud : public AHUD
 public:
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UGrid> inventoryWidgetClass = nullptr;
+	TSubclassOf<UUserWidget> inventoryWidgetClass = nullptr;
 
 private:
 
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	TObjectPtr<UGrid> _inventoryWidget = nullptr;
-	
-	UPROPERTY(EditDefaultsOnly)
-	FVector2D _gridPivot;
-
-	UPROPERTY(EditDefaultsOnly)
-	FVector2D _gridDimensions;
-
-	UPROPERTY(EditDefaultsOnly)
-	float _gridHorizontalMargin;
-
-	UPROPERTY(EditDefaultsOnly)
-	float _gridVerticalMargin;
-
-	UPROPERTY(EditDefaultsOnly)
-	float _cellSize;
-
-	UPROPERTY(EditDefaultsOnly)
-	float _cellSpace;
-
-	UPROPERTY(EditDefaultsOnly, meta = (ClampMin = 1, UIMin = 1))
-	int _extraLines;
+	TObjectPtr<UUserWidget> _inventoryWidget = nullptr;
 	
 	GENERATED_BODY()
 };
