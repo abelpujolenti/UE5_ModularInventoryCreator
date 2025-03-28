@@ -21,13 +21,13 @@ protected:
 
 	virtual void NativeOnInitialized() override;
 
-	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, const int& maxXBounds,
-		int& currentXPosition, const int& maxYBounds, int& currentYPosition) override;
+	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
+		int& currentYPosition) override;
 
-	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& maxXBounds, int& currentXPosition,
-		const int& minYBounds, const int& maxYBounds, int& currentYPosition) override;
+	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
+		int& currentYPosition) override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
 	int _cellsExtraLines;
 
 private:	

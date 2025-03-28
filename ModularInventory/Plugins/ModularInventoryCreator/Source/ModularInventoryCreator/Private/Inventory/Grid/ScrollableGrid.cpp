@@ -14,15 +14,15 @@ void UScrollableGrid::NativeOnInitialized()
 	Super::NativeOnInitialized();
 }
 
-void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, const int& maxXBounds,
-    int& currentXPosition, const int& maxYBounds, int& currentYPosition)
+void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
+	int& currentYPosition)
 {	
-	Super::CreateVerticalGrid(world, minXBounds, maxXBounds, currentXPosition, maxYBounds, currentYPosition);
+	Super::CreateHorizontalGrid(world, minXBounds, currentXPosition, currentYPosition);
 	
 	for (int i = 0; i < _cellsExtraLines; ++i)
 	{
 		TArray<TObjectPtr<UCell>> newLine;
-		while (currentXPosition + _cellSize.X + _cellsSpace <= maxXBounds)
+		for (int j = 0; j < _cellsCount.row; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
@@ -37,15 +37,15 @@ void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, const 
 	}
 }
 
-void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& maxXBounds,
-	int& currentXPosition, const int& minYBounds, const int& maxYBounds, int& currentYPosition)
+void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition, const int& minYBounds,
+	int& currentYPosition)
 {	
-	Super::CreateHorizontalGrid(world, maxXBounds, currentXPosition, minYBounds, maxYBounds, currentYPosition);
+	Super::CreateVerticalGrid(world, currentXPosition, minYBounds, currentYPosition);
 
 	for (int i = 0; i < _cellsExtraLines; ++i)
 	{
 		TArray<TObjectPtr<UCell>> newLine;
-		while (currentYPosition + _cellSize.Y + _cellsSpace <= maxYBounds)
+		for (int j = 0; j < _cellsCount.column; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));

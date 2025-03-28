@@ -2,7 +2,7 @@
 
 #include "ModularInventoryCreator.h"
 
-#include "FGridEditor.h"
+#include "Editor/FGridEditor.h"
 
 #define LOCTEXT_NAMESPACE "FModularInventoryCreatorModule"
 

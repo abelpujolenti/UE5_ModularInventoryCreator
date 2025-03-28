@@ -55,9 +55,8 @@ enum class EGridHorizontalAlignment : uint8
 };
 
 UCLASS()
-class MODULARINVENTORYCREATOR_API UGrid : public UInventoryWidgetBase, public IDetailCustomization
+class MODULARINVENTORYCREATOR_API UGrid : public UInventoryWidgetBase
 {
-
 	friend class FGridEditor;
 	
 public:
@@ -79,12 +78,15 @@ protected:
 	void InitGrid(const TObjectPtr<UWorld>& world);
 
 	void CreateBoundaries(const TObjectPtr<UWorld>& world);
+
+	void AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& currentXPosition,
+		int& minYBounds, const int& maxYBounds, int& currentYPosition);
+
+	void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds) const; 
 	
-	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, const int& maxXBounds,
-		int& currentXPosition, const int& maxYBounds, int& currentYPosition);
+	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition, int& currentYPosition);
 	
-	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& maxXBounds, int& currentXPosition,
-		const int& minYBounds, const int& maxYBounds, int& currentYPosition);
+	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds, int& currentYPosition);
 
 	UPROPERTY()
 	TObjectPtr<UCanvasPanelSlot> _sizeBoxSlot = nullptr;
@@ -97,20 +99,29 @@ protected:
 
 	#pragma region Layout
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Layout")
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
 	FVector2D _gridPivot;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Layout")
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
 	bool _useCellsToShapeGrid;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Layout", meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout", meta = (ClampMin = 1, UIMin = 1))
 	FVector2D _gridDimensions;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Layout", meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout", meta = (ClampMin = 1, UIMin = 1))
 	FMargin _gridPadding;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Layout")
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
 	EGridOrientation _gridOrientation;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
+	bool _fillGridWithCells;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
+	EGridVerticalAlignment _gridVerticalAlignment;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
+	EGridHorizontalAlignment _gridHorizontalAlignment;
 
 	#pragma endregion
 
@@ -121,15 +132,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
 	bool _useCellClassSizes;
-
-	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
-	bool _fillGridWithCells;
-
-	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
-	EGridVerticalAlignment _gridVerticalAlignment;
-
-	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
-	EGridHorizontalAlignment _gridHorizontalAlignment;
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 1, UIMin = 1))
 	FRowCol _cellsCount;
@@ -145,8 +147,6 @@ protected:
 	#pragma endregion
 
 private:
-
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 	
 	GENERATED_BODY()
 };
