@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
-#include "InventoryWidgetBase.h"
+#include "Inventory/InventoryWidgetBase.h"
 #include "Grid.generated.h"
 
 class UCanvasPanelSlot;
@@ -30,14 +30,14 @@ struct FRowCol
 };
 
 UENUM(BlueprintType)
-enum class GridOrientation : uint8
+enum class EGridOrientation : uint8
 {
 	VERTICAL UMETA(DisplayName = "Vertical"),
 	HORIZONTAL UMETA(DisplayName = "Horizontal")
 };
 
 UENUM(BlueprintType)
-enum class GridVerticalAlignment : uint8
+enum class EGridVerticalAlignment : uint8
 {
 	FILL UMETA(DisplayName = "Fill"),
 	TOP UMETA(DisplayName = "Top"),
@@ -46,7 +46,7 @@ enum class GridVerticalAlignment : uint8
 };
 
 UENUM(BlueprintType)
-enum class GridHorizontalAlignment : uint8
+enum class EGridHorizontalAlignment : uint8
 {
 	FILL UMETA(DisplayName = "Fill"),
 	LEFT UMETA(DisplayName = "Left"),
@@ -110,34 +110,34 @@ protected:
 	FMargin _gridPadding;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Grid|Layout")
-	GridOrientation _gridOrientation;
+	EGridOrientation _gridOrientation;
 
 	#pragma endregion
 
 	#pragma region Cells
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells")
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
 	TSubclassOf<UCell> _cellClass = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells")
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
 	bool _useCellClassSizes;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells")
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
 	bool _fillGridWithCells;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells")
-	GridVerticalAlignment _gridVerticalAlignment;
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
+	EGridVerticalAlignment _gridVerticalAlignment;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells")
-	GridHorizontalAlignment _gridHorizontalAlignment;
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
+	EGridHorizontalAlignment _gridHorizontalAlignment;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells", meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 1, UIMin = 1))
 	FRowCol _cellsCount;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells",meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells",meta = (ClampMin = 1, UIMin = 1))
 	FVector2D _cellSize;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells", meta = (ClampMin = 0, UIMin = 0))
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 0, UIMin = 0))
 	float _cellsSpace;
 
 	TArray<TArray<TObjectPtr<UCell>>> _cellGrid;

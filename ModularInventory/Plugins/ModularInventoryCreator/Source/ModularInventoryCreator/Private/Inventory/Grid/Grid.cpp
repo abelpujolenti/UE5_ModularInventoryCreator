@@ -1,10 +1,9 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Grid.h"
-#include "CustomLog.h"
+#include "Inventory/Grid/Grid.h"
 
-#include "Cell.h"
+#include "Inventory/Cell.h"
 #include "DetailLayoutBuilder.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
@@ -59,7 +58,7 @@ void UGrid::CreateBoundaries(const TObjectPtr<UWorld>& world)
 	const int& maxYBounds = _gridDimensions.Y - _gridPadding.Bottom;
 	int currentYPosition = minYBounds + _cellsSpace;
 	
-	if (_gridOrientation == GridOrientation::VERTICAL)
+	if (_gridOrientation == EGridOrientation::VERTICAL)
 	{
 		CreateVerticalGrid(world, minXBounds, maxXBounds, currentXPosition, maxYBounds, currentYPosition);
 		return;

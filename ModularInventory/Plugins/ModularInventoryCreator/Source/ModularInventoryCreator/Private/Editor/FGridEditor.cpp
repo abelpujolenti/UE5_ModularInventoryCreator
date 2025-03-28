@@ -1,8 +1,7 @@
 ﻿#include "FGridEditor.h"
 
 #include "DetailLayoutBuilder.h"
-#include "Grid.h"
-#include "Logging/StructuredLog.h"
+#include "Inventory/Grid/Grid.h"
 
 #define LOCTEXT_NAMESPACE "FGridEditor"
 
@@ -12,12 +11,7 @@ TSharedRef<IDetailCustomization> FGridEditor::MakeInstance()
 }
 
 void FGridEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
-{
-	/*DetailBuilder.EditCategory("Grid|Layout", FText::GetEmpty(), ECategoryPriority::Uncommon);
-	DetailBuilder.EditCategory("Grid|Cells", FText::GetEmpty(), ECategoryPriority::Uncommon);
-
-	DetailBuilder.SortCategories();*/
-	
+{	
 	TSharedPtr<IPropertyHandle> useCellToShapeGrid = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _useCellsToShapeGrid));
 	TSharedPtr<IPropertyHandle> gridDimensions = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _gridDimensions));
 	TSharedPtr<IPropertyHandle> fillGridWithCells = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _fillGridWithCells));
@@ -47,22 +41,22 @@ void FGridEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 
 	DetailBuilder.EditDefaultProperty(gridVerticalAlignment)->Visibility(TAttribute<EVisibility>::Create([gridOrientation]()
 		{
-			GridOrientation orientation;
+			EGridOrientation orientation;
 			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
 			{
 				return EVisibility::Collapsed;				
 			}
-			return orientation == GridOrientation::VERTICAL ? EVisibility::Visible : EVisibility::Collapsed;
+			return orientation == EGridOrientation::VERTICAL ? EVisibility::Visible : EVisibility::Collapsed;
 		}));
 
 	DetailBuilder.EditDefaultProperty(gridHorizontalAlignment)->Visibility(TAttribute<EVisibility>::Create([gridOrientation]()
 		{
-			GridOrientation orientation;
+			EGridOrientation orientation;
 			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
 			{
 				return EVisibility::Collapsed;				
 			}
-			return orientation == GridOrientation::HORIZONTAL ? EVisibility::Visible : EVisibility::Collapsed;
+			return orientation == EGridOrientation::HORIZONTAL ? EVisibility::Visible : EVisibility::Collapsed;
 		}));
 
 	DetailBuilder.EditDefaultProperty(cellsCount)->Visibility(TAttribute<EVisibility>::Create([useCellToShapeGrid, fillGridWithCells]()

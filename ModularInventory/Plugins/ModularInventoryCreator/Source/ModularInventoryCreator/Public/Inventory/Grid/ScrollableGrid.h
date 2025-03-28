@@ -13,7 +13,11 @@ UCLASS()
 class MODULARINVENTORYCREATOR_API UScrollableGrid : public UGrid
 {
 
+public:
+
 protected:
+
+	virtual ~UScrollableGrid() override = default;
 
 	virtual void NativeOnInitialized() override;
 
@@ -23,9 +27,10 @@ protected:
 	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& maxXBounds, int& currentXPosition,
 		const int& minYBounds, const int& maxYBounds, int& currentYPosition) override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Grid|Cells", meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditDefaultsOnly, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
 	int _cellsExtraLines;
 
-private:
+private:	
+	
 	GENERATED_BODY()
 };

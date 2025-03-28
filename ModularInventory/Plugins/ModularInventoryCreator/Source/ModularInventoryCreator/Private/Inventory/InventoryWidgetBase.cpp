@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InventoryWidgetBase.h"
+#include "Inventory/InventoryWidgetBase.h"
 
 #if WITH_EDITOR
 const FText UInventoryWidgetBase::GetPaletteCategory()

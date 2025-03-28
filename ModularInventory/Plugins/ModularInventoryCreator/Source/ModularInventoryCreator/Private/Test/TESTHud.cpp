@@ -1,9 +1,9 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "TESTHud.h"
+#include "Test/TESTHud.h"
 
-#include "InventoryWidgetBase.h"
+#include "Blueprint/UserWidget.h"
 
 void ATESTHud::BeginPlay()
 {
