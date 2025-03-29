@@ -16,12 +16,20 @@ class MODULARINVENTORYCREATOR_API UCell : public UInventoryWidgetBase
 	
 public:
 
-	void SetCellSize(float newSize) const;
+	UFUNCTION(BlueprintCallable, Category = "Cell|Size")
+	void SetCellSize(FVector2D newSize);
+
+	UFUNCTION(BlueprintCallable, Category = "Cell|Size")
+	FVector2D GetCellSize() const;
 
 protected:
 
+	virtual void NativeOnInitialized() override;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UImage> BackgroundCellImage = nullptr;
+	TObjectPtr<UImage> _backgroundCellImage = nullptr;
+
+	FVector2D _cellSize;
 	
 private:
 	

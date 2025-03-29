@@ -38,7 +38,7 @@ public class ModularInventoryCreator : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore", "Eigen",
+				"SlateCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
