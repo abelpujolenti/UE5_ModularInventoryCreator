@@ -13,6 +13,8 @@ UCLASS()
 class MODULARINVENTORYCREATOR_API UScrollableGrid : public UGrid
 {
 
+	friend class FScrollableGridEditor;
+
 public:
 
 protected:

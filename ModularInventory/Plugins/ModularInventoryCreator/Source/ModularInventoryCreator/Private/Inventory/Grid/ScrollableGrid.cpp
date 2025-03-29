@@ -10,6 +10,20 @@
 void UScrollableGrid::NativeOnInitialized()
 {
 	_cellsExtraLines *= 2;
+
+	if (!_useCellsToShapeGrid && !_fillGridWithCells)
+	{		
+		if (_gridOrientation == EGridOrientation::VERTICAL)
+		{
+			AdjustCellsCount(_columns, _cellSize.X, _gridPadding.Left, _gridDimensions.X - _gridPadding.Right,
+				FVector2D{_cellLeftMargin, _cellRightMargin});
+		}
+		else
+		{
+			AdjustCellsCount(_rows, _cellSize.Y, _gridPadding.Top, _gridDimensions.Y - _gridPadding.Bottom,
+				FVector2D{_cellTopMargin, _cellBottomMargin});
+		}
+	}
 	
 	Super::NativeOnInitialized();
 }
@@ -22,18 +36,18 @@ void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, cons
 	for (int i = 0; i < _cellsExtraLines; ++i)
 	{
 		TArray<TObjectPtr<UCell>> newLine;
-		for (int j = 0; j < _cellsCount.row; ++j)
+		for (int j = 0; j < _columns; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);	
 			newLine.Add(cell);
-			currentXPosition += _cellMargins.Left + _cellSize.X + _cellMargins.Right;
+			currentXPosition += _cellLeftMargin + _cellSize.X + _cellRightMargin;
 		}
 		_cellGrid.Add(newLine);
-		currentXPosition = minXBounds + _cellMargins.Left;
-		currentYPosition += _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;
+		currentXPosition = minXBounds + _cellLeftMargin;
+		currentYPosition += _cellTopMargin + _cellSize.Y + _cellBottomMargin;
 	}
 }
 
@@ -45,17 +59,17 @@ void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& c
 	for (int i = 0; i < _cellsExtraLines; ++i)
 	{
 		TArray<TObjectPtr<UCell>> newLine;
-		for (int j = 0; j < _cellsCount.column; ++j)
+		for (int j = 0; j < _rows; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
 			newLine.Add(cell);
-			currentYPosition += _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;	
+			currentYPosition += _cellTopMargin + _cellSize.Y + _cellBottomMargin;	
 		}
 		_cellGrid.Add(newLine);
-		currentYPosition = minYBounds + _cellMargins.Top;
-		currentXPosition += _cellMargins.Left + _cellSize.X + _cellMargins.Right;
+		currentYPosition = minYBounds + _cellTopMargin;
+		currentXPosition += _cellLeftMargin + _cellSize.X + _cellRightMargin;
 	}
 }

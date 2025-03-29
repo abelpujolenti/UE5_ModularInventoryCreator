@@ -17,18 +17,6 @@ class UCell;
  * 
  */
 
-USTRUCT(BlueprintType)
-struct FRowCol
-{	
-	UPROPERTY(EditAnywhere, Category = "Custom", meta = (DisplayName = "Row", ClampMin = 1, UIMin = 1))
-	int32 row;
-
-	UPROPERTY(EditAnywhere, Category = "Custom", meta = (DisplayName = "Column", ClampMin = 1, UIMin = 1))
-	int32 column;
-	
-	GENERATED_BODY();	
-};
-
 UENUM(BlueprintType)
 enum class EGridOrientation : uint8
 {
@@ -82,7 +70,8 @@ protected:
 	void AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& currentXPosition,
 		int& minYBounds, const int& maxYBounds, int& currentYPosition);
 
-	void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins) const; 
+	static void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins);
+	static void AdjustCellsCountWithClamp(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins); 
 	
 	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition, int& currentYPosition);
 	
@@ -134,13 +123,25 @@ protected:
 	bool _useCellClassSizes;
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 1, UIMin = 1))
-	FRowCol _cellsCount;
+	int _columns;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 1, UIMin = 1))
+	int _rows;
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Cells",meta = (ClampMin = 1, UIMin = 1))
 	FVector2D _cellSize;
 
-	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 0, UIMin = 0))
-	FMargin _cellMargins;
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells|Margins", meta = (ClampMin = 0, UIMin = 0))
+	float _cellTopMargin;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells|Margins", meta = (ClampMin = 0, UIMin = 0))
+	float _cellLeftMargin;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells|Margins", meta = (ClampMin = 0, UIMin = 0))
+	float _cellRightMargin;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Cells|Margins", meta = (ClampMin = 0, UIMin = 0))
+	float _cellBottomMargin;
 
 	TArray<TArray<TObjectPtr<UCell>>> _cellGrid;
 
