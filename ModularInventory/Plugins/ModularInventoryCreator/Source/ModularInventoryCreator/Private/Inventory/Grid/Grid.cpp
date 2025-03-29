@@ -29,11 +29,9 @@ void UGrid::NativeOnInitialized()
 
 	if (_useCellsToShapeGrid)
 	{
-		_gridDimensions = FVector2D(_gridPadding.Left + _cellsCount.row * (_cellSize.X + _cellsSpace) + _gridPadding.Right,
-			_gridPadding.Top + _cellsCount.column * (_cellSize.Y + _cellsSpace) + _gridPadding.Bottom);
+		_gridDimensions = FVector2D(_gridPadding.Left + _cellsCount.row * (_cellMargins.Left + _cellSize.X + _cellMargins.Right) + _gridPadding.Right,
+			_gridPadding.Top + _cellsCount.column * (_cellMargins.Top + _cellSize.Y + _cellMargins.Bottom) + _gridPadding.Bottom);
 	}
-
-	_cellsSpace /= 2;
 
 	InitGrid(world);
 }
@@ -51,11 +49,11 @@ void UGrid::CreateBoundaries(const TObjectPtr<UWorld>& world)
 {
 	int minXBounds = _gridPadding.Left;
 	int maxXBounds = _gridDimensions.X - _gridPadding.Right;
-	int currentXPosition = minXBounds + _cellsSpace;
+	int currentXPosition = minXBounds + _cellMargins.Left;
 
 	int minYBounds = _gridPadding.Top;
 	int maxYBounds = _gridDimensions.Y - _gridPadding.Bottom;
-	int currentYPosition = minYBounds + _cellsSpace;
+	int currentYPosition = minYBounds + _cellMargins.Top;
 
 	const bool isOrientationVertical = _gridOrientation == EGridOrientation::VERTICAL;
 
@@ -64,8 +62,8 @@ void UGrid::CreateBoundaries(const TObjectPtr<UWorld>& world)
 		AdjustBoundaries(isOrientationVertical, minXBounds, maxXBounds, currentXPosition, minYBounds, maxYBounds, currentYPosition);
 	}
 	
-	AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds);
-	AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds);
+	AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellMargins.Left, _cellMargins.Right});
+	AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds, FVector2D{_cellMargins.Top, _cellMargins.Bottom});
 	
 	if (isOrientationVertical)
 	{
@@ -80,7 +78,9 @@ void UGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, 
 	int& minYBounds, const int& maxYBounds, int& currentYPosition)
 {
 	if (isOrientationVertical)
-	{		
+	{
+		AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellMargins.Left, _cellMargins.Right});
+		
 		const int& availableVerticalSpace = maxYBounds - minYBounds;	
 
 		if (_gridVerticalAlignment == EGridVerticalAlignment::FILL)
@@ -93,42 +93,49 @@ void UGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, 
 
 			if (finalAvailableVerticalSpace < 0)
 			{
-				_cellsSpace = 0;
-				AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds);
-				AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds);
+				_cellMargins.Top = 0;
+				_cellMargins.Bottom = 0;
+				AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds, FVector2D{_cellMargins.Top, _cellMargins.Bottom});
 				currentYPosition = minYBounds;
 				return;
 			}
 
-			_cellsSpace = finalAvailableVerticalSpace / cellsPerColumn;
-			_cellsSpace /= 2;
-			AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds);
-			currentYPosition = minYBounds + _cellsSpace;
-		
+			_cellMargins.Top = finalAvailableVerticalSpace / cellsPerColumn / 2;
+			_cellMargins.Bottom = _cellMargins.Top;
+			AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellMargins.Left, _cellMargins.Right});
+			currentYPosition = minYBounds + _cellMargins.Top;
 			return;
 		}
 
-		AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds);		
-		AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds);
+		AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds, FVector2D{_cellMargins.Top, _cellMargins.Bottom});		
 		
 		const int& cellsPerColumn = _cellsCount.column;
+
+		const float& spaceOccupiedPerCell = _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;
 
 		if (_gridVerticalAlignment == EGridVerticalAlignment::CENTER)
 		{
 			int halfCells = FMath::Floor(cellsPerColumn / 2);
 
-			minYBounds = availableVerticalSpace / 2 - halfCells * (_cellSize.Y + _cellsSpace * 2) + (_cellsSpace + _cellSize.Y / 2);
+			minYBounds += availableVerticalSpace / 2 - halfCells * spaceOccupiedPerCell;
+
+			if ((cellsPerColumn &  1) == 1)
+			{
+				minXBounds -= spaceOccupiedPerCell / 2;
+			}
 		}
 
 		if (_gridVerticalAlignment == EGridVerticalAlignment::BOTTOM)
 		{
-			minYBounds = maxYBounds - cellsPerColumn * (_cellSize.Y + _cellsSpace * 2);
+			minYBounds = maxYBounds - cellsPerColumn * (_cellMargins.Top + _cellSize.Y + _cellMargins.Bottom);
 		}
 
-		currentYPosition = minYBounds + _cellsSpace;
+		currentYPosition = minYBounds + _cellMargins.Top;
 
 		return;
 	}
+
+	AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds, FVector2D{_cellMargins.Top, _cellMargins.Bottom});
 	
 	const int& availableHorizontalSpace = maxXBounds - minXBounds;
 		
@@ -142,63 +149,70 @@ void UGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, 
 
 		if (finalAvailableHorizontalSpace < 0)
 		{
-			_cellsSpace = 0;
-			AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds);
-			AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds);
+			_cellMargins.Left = 0;
+			_cellMargins.Right = 0;
+			AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellMargins.Left, _cellMargins.Right});			
 			currentXPosition = minXBounds;
 			return;
 		}
-
-		_cellsSpace = finalAvailableHorizontalSpace / cellsPerRow;
-		_cellsSpace /= 2;
-		AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds);
-		currentXPosition = minXBounds + _cellsSpace;
-
+		
+		_cellMargins.Left = finalAvailableHorizontalSpace / cellsPerRow / 2;
+		_cellMargins.Right = _cellMargins.Left;		
+		currentXPosition = minXBounds + _cellMargins.Left;
 		return;
 	}
 
-	AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds);
-	AdjustCellsCount(_cellsCount.column, _cellSize.Y, minYBounds, maxYBounds);
+	AdjustCellsCount(_cellsCount.row, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellMargins.Left, _cellMargins.Right});
 		
 	const int& cellsPerRow = _cellsCount.row;
+
+	const float& spaceOccupiedPerCell = _cellMargins.Left + _cellSize.X + _cellMargins.Right;
 
 	if (_gridHorizontalAlignment == EGridHorizontalAlignment::CENTER)
 	{
 		int halfCells = FMath::Floor(cellsPerRow / 2);
 
-		minXBounds = availableHorizontalSpace / 2 - halfCells * (_cellSize.X + _cellsSpace * 2) + (_cellsSpace + _cellSize.X / 2);
+		minXBounds += availableHorizontalSpace / 2 - halfCells * spaceOccupiedPerCell;
+
+		if ((cellsPerRow &  1) == 1)
+		{
+			minXBounds -= spaceOccupiedPerCell / 2;
+		}
 	}
 
 	if (_gridHorizontalAlignment == EGridHorizontalAlignment::RIGHT)
 	{
-		minXBounds = maxXBounds - cellsPerRow * (_cellSize.X + _cellsSpace * 2);
+		minXBounds = maxXBounds - cellsPerRow * spaceOccupiedPerCell;
 	}
 
-	currentXPosition = minXBounds + _cellsSpace;
+	currentXPosition = minXBounds + _cellMargins.Left;
 }
 
-void UGrid::AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds) const
+void UGrid::AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds,
+	const FVector2D& margins) const
 {
 	int currentCheckPosition = minBounds;
 
-	/*if (_fillGridWithCells)
-	{	
-		while (currentCheckPosition < maxBounds)
+	if (_fillGridWithCells)
+	{		
+		cellsPerLine = 0;
+		
+		while (currentCheckPosition + margins.X + cellSize + margins.Y <= maxBounds)
 		{
 			cellsPerLine++;
-			currentCheckPosition += cellSize + _cellsSpace * 2;
+			currentCheckPosition += margins.X + cellSize + margins.Y;
 		}
 		return;
-	}*/
+	}
 	
 	const int currentCellsPerLine = cellsPerLine;
 	
 	cellsPerLine = 0;
 	
-	while (currentCheckPosition < maxBounds && cellsPerLine < currentCellsPerLine)
+	while (currentCheckPosition + margins.X + cellSize + margins.Y <= maxBounds && cellsPerLine < currentCellsPerLine)
 	{
 		cellsPerLine++;
-		currentCheckPosition += cellSize + _cellsSpace * 2;
+		currentCheckPosition += margins.X + cellSize + margins.Y;
 	}
 }
 
@@ -214,11 +228,11 @@ void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPos
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
 			newLine.Add(cell);
-			currentYPosition += _cellSize.Y + _cellsSpace * 2;
+			currentYPosition += _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;
 		}
 		_cellGrid.Add(newLine);
-		currentYPosition = minYBounds + _cellsSpace;
-		currentXPosition += _cellSize.X + _cellsSpace * 2;
+		currentYPosition = minYBounds + _cellMargins.Top;
+		currentXPosition += _cellMargins.Left + _cellSize.X + _cellMargins.Right;
 	}
 }
 
@@ -234,11 +248,11 @@ void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& min
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
 			newLine.Add(cell);
-			currentXPosition += _cellSize.X + _cellsSpace * 2;
+			currentXPosition += _cellMargins.Left + _cellSize.X + _cellMargins.Right;
 		}
 		_cellGrid.Add(newLine);
-		currentXPosition = minXBounds + _cellsSpace;
-		currentYPosition += _cellSize.Y + _cellsSpace * 2;
+		currentXPosition = minXBounds + _cellMargins.Left;
+		currentYPosition += _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;
 	}
 }
 

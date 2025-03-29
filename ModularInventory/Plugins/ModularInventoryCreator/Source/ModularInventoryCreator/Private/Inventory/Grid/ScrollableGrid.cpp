@@ -29,11 +29,11 @@ void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, cons
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);	
 			newLine.Add(cell);
-			currentXPosition += _cellSize.X + _cellsSpace * 2;		
+			currentXPosition += _cellMargins.Left + _cellSize.X + _cellMargins.Right;
 		}
 		_cellGrid.Add(newLine);
-		currentXPosition = minXBounds + _cellsSpace;
-		currentYPosition += _cellSize.Y + _cellsSpace;
+		currentXPosition = minXBounds + _cellMargins.Left;
+		currentYPosition += _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;
 	}
 }
 
@@ -52,10 +52,10 @@ void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& c
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
 			newLine.Add(cell);
-			currentYPosition += _cellSize.Y + _cellsSpace * 2;		
+			currentYPosition += _cellMargins.Top + _cellSize.Y + _cellMargins.Bottom;	
 		}
 		_cellGrid.Add(newLine);
-		currentYPosition = minYBounds + _cellsSpace;
-		currentXPosition += _cellSize.X + _cellsSpace;
+		currentYPosition = minYBounds + _cellMargins.Top;
+		currentXPosition += _cellMargins.Left + _cellSize.X + _cellMargins.Right;
 	}
 }

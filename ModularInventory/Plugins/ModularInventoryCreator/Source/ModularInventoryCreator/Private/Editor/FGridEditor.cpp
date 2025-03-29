@@ -25,7 +25,7 @@ void FGridEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 	TSharedPtr<IPropertyHandle> useCellClassSizes = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _useCellClassSizes));
 	TSharedPtr<IPropertyHandle> cellSize = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _cellSize));	
 
-	TSharedPtr<IPropertyHandle> cellSpace = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _cellsSpace));	
+	TSharedPtr<IPropertyHandle> cellSpace = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _cellMargins));	
 
 	DetailBuilder.EditDefaultProperty(gridDimensions)->Visibility(TAttribute<EVisibility>::Create([useCellsToShapeGrid]()
 		{

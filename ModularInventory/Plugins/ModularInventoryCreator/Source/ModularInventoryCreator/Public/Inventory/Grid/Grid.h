@@ -82,7 +82,7 @@ protected:
 	void AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& currentXPosition,
 		int& minYBounds, const int& maxYBounds, int& currentYPosition);
 
-	void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds) const; 
+	void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins) const; 
 	
 	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition, int& currentYPosition);
 	
@@ -140,7 +140,7 @@ protected:
 	FVector2D _cellSize;
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Cells", meta = (ClampMin = 0, UIMin = 0))
-	float _cellsSpace;
+	FMargin _cellMargins;
 
 	TArray<TArray<TObjectPtr<UCell>>> _cellGrid;
 
