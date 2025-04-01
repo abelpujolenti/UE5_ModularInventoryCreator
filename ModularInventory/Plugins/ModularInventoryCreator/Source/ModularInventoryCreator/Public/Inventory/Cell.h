@@ -4,23 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "InventoryWidgetBase.h"
+#include "Components/Button.h"
 #include "Cell.generated.h"
 
 class UImage;
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class MODULARINVENTORYCREATOR_API UCell : public UInventoryWidgetBase
 {
 	
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Cell|Size")
-	void SetCellSize(FVector2D newSize);
+	virtual void SetCellSize(FVector2D newSize);
 
 	UFUNCTION(BlueprintCallable, Category = "Cell|Size")
-	FVector2D GetCellSize() const;
+	virtual FVector2D GetCellSize() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Cell")
+	virtual void OnClick() PURE_VIRTUAL(UCell::OnClick);
 
 protected:
 

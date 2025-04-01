@@ -30,270 +30,88 @@ void FGridEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 	TSharedPtr<IPropertyHandle> cellLeftMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _cellLeftMargin));
 	TSharedPtr<IPropertyHandle> cellRightMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _cellRightMargin));
 	TSharedPtr<IPropertyHandle> cellBottomMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGrid, _cellBottomMargin));
-
-	DetailBuilder.EditDefaultProperty(gridDimensions)->Visibility(TAttribute<EVisibility>::Create([useCellsToShapeGrid]()
-		{
-			bool itUsesCellsToShapeGrid;
-		
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-		
-			return itUsesCellsToShapeGrid ? EVisibility::Collapsed : EVisibility::Visible;
-		}));
-
-	DetailBuilder.EditDefaultProperty(fillGridWithCells)->Visibility(TAttribute<EVisibility>::Create([useCellsToShapeGrid]()
-		{
-			bool itUsesCellsToShapeGrid;
-		
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-		
-			return itUsesCellsToShapeGrid ? EVisibility::Collapsed : EVisibility::Visible;			
-		}));
-
-	DetailBuilder.EditDefaultProperty(gridVerticalAlignment)->Visibility(TAttribute<EVisibility>::Create(
-		[useCellsToShapeGrid, gridOrientation, fillGridWithCells]()
+	
+	auto RefreshEditor = [&DetailBuilder]()
 	{
-			bool itUsesCellsToShapeGrid;
-			bool itFillsGridWithCells;
-		
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-		
-			if (itUsesCellsToShapeGrid ||itFillsGridWithCells)
-			{
-				return EVisibility::Collapsed;
-			}
-		
-			EGridOrientation orientation;
-			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;				
-			}
-			return orientation == EGridOrientation::VERTICAL ? EVisibility::Visible : EVisibility::Collapsed;
-		}));
+		DetailBuilder.ForceRefreshDetails();
+	};
 
-	DetailBuilder.EditDefaultProperty(gridHorizontalAlignment)->Visibility(TAttribute<EVisibility>::Create(
-		[useCellsToShapeGrid, gridOrientation, fillGridWithCells]()
+	useCellsToShapeGrid->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+	gridOrientation->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+	fillGridWithCells->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+	useCellClassSizes->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+	gridHorizontalAlignment->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+	gridVerticalAlignment->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+
+	bool itUsesCellsToShapeGrid;
+	bool itFillsGridWithCells;
+	EGridOrientation orientation;
+	bool itUsesCellClassSizes;
+	
+	useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
+	fillGridWithCells->GetValue(itFillsGridWithCells);
+	gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation));
+	useCellClassSizes->GetValue(itUsesCellClassSizes);
+
+	if (itUsesCellsToShapeGrid)
 	{
-			bool itUsesCellsToShapeGrid;
-			bool itFillsGridWithCells;
-		
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-		
-			if (itUsesCellsToShapeGrid || itFillsGridWithCells)
-			{
-				return EVisibility::Collapsed;
-			}
-		
-			EGridOrientation orientation;
-			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;				
-			}
-			return orientation == EGridOrientation::HORIZONTAL ? EVisibility::Visible : EVisibility::Collapsed;
-		}));
+		DetailBuilder.HideProperty(gridDimensions);
+		DetailBuilder.HideProperty(fillGridWithCells);
+	}
 
-	DetailBuilder.EditDefaultProperty(columns)->Visibility(TAttribute<EVisibility>::Create([useCellsToShapeGrid, fillGridWithCells]()
+	if (itUsesCellsToShapeGrid || itFillsGridWithCells)
+	{		
+		DetailBuilder.HideProperty(gridVerticalAlignment);
+		DetailBuilder.HideProperty(gridHorizontalAlignment);
+	}
+
+	if (orientation == EGridOrientation::VERTICAL)
+	{
+		DetailBuilder.HideProperty(gridHorizontalAlignment);
+	}
+	else
+	{
+		DetailBuilder.HideProperty(gridVerticalAlignment);		
+	}
+
+	if (itUsesCellClassSizes)
+	{		
+		DetailBuilder.HideProperty(cellSize);
+	}
+
+	if (!itUsesCellsToShapeGrid)
+	{
+		if (itFillsGridWithCells)
 		{
-			bool itUsesCellsToShapeGrid;
-			bool itFillsGridWithCells;
-		
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-		
-			return itUsesCellsToShapeGrid || !itFillsGridWithCells ? EVisibility::Visible : EVisibility::Collapsed;			
-		}));
-
-	DetailBuilder.EditDefaultProperty(rows)->Visibility(TAttribute<EVisibility>::Create([useCellsToShapeGrid, fillGridWithCells]()
+			DetailBuilder.HideProperty(columns);
+			DetailBuilder.HideProperty(rows);				
+		}
+		else
 		{
-			bool itUsesCellsToShapeGrid;
-			bool itFillsGridWithCells;
-		
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-		
-			return itUsesCellsToShapeGrid || !itFillsGridWithCells ? EVisibility::Visible : EVisibility::Collapsed;			
-		}));
-
-	DetailBuilder.EditDefaultProperty(cellSize)->Visibility(TAttribute<EVisibility>::Create([useCellClassSizes]()
-		{
-			bool itUsesCellsToShapeGrid;
-			useCellClassSizes->GetValue(itUsesCellsToShapeGrid);
-			return itUsesCellsToShapeGrid ? EVisibility::Collapsed : EVisibility::Visible;			
-		}));	
-
-	DetailBuilder.EditDefaultProperty(cellTopMargin)->Visibility(TAttribute<EVisibility>::Create(
-		[useCellsToShapeGrid, fillGridWithCells, gridOrientation, gridVerticalAlignment]()
-		{		
-			bool itUsesCellsToShapeGrid;
-			
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-
-			if (itUsesCellsToShapeGrid)
-			{
-				return EVisibility::Visible;
-			}
-			
-			bool itFillsGridWithCells;
-		
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-
-			if (itFillsGridWithCells)
-			{
-				return EVisibility::Visible;
-			}
-			
-			EGridOrientation orientation;
-			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;				
-			}
-
 			if (orientation == EGridOrientation::VERTICAL)
 			{
 				EGridVerticalAlignment verticalAlignment;
+				gridVerticalAlignment->GetValue(reinterpret_cast<uint8&>(verticalAlignment));
 
-				if (gridVerticalAlignment->GetValue(reinterpret_cast<uint8&>(verticalAlignment)) != FPropertyAccess::Success)
+				if (verticalAlignment == EGridVerticalAlignment::FILL)
 				{
-					return EVisibility::Collapsed;			
-				}
-
-				return verticalAlignment == EGridVerticalAlignment::FILL ? EVisibility::Collapsed : EVisibility::Visible; 
+					DetailBuilder.HideProperty(cellTopMargin);
+					DetailBuilder.HideProperty(cellBottomMargin);
+				}	
 			}
-			
-			return EVisibility::Visible;		
-		}));
-	
-
-	DetailBuilder.EditDefaultProperty(cellBottomMargin)->Visibility(TAttribute<EVisibility>::Create(
-		[useCellsToShapeGrid, fillGridWithCells, gridOrientation, gridVerticalAlignment]()
-		{		
-			bool itUsesCellsToShapeGrid;
-			
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-
-			if (itUsesCellsToShapeGrid)
+			else
 			{
-				return EVisibility::Visible;
-			}
-			
-			bool itFillsGridWithCells;
-		
-			fillGridWithCells->GetValue(itFillsGridWithCells);
+				EGridHorizontalAlignment horizontalAlignment;
+				gridHorizontalAlignment->GetValue(reinterpret_cast<uint8&>(horizontalAlignment));
 
-			if (itFillsGridWithCells)
-			{
-				return EVisibility::Visible;
-			}
-			
-			EGridOrientation orientation;
-			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;				
-			}
-
-			if (orientation == EGridOrientation::VERTICAL)
-			{
-				EGridVerticalAlignment verticalAlignment;
-
-				if (gridVerticalAlignment->GetValue(reinterpret_cast<uint8&>(verticalAlignment)) != FPropertyAccess::Success)
+				if (horizontalAlignment == EGridHorizontalAlignment::FILL)
 				{
-					return EVisibility::Collapsed;			
-				}
-
-				return verticalAlignment == EGridVerticalAlignment::FILL ? EVisibility::Collapsed : EVisibility::Visible; 
-			}
-
-			return EVisibility::Visible;		
-		}));
-	
-
-	DetailBuilder.EditDefaultProperty(cellLeftMargin)->Visibility(TAttribute<EVisibility>::Create(
-		[useCellsToShapeGrid, fillGridWithCells, gridOrientation, gridHorizontalAlignment]()
-		{		
-			bool itUsesCellsToShapeGrid;
-			
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-
-			if (itUsesCellsToShapeGrid)
-			{
-				return EVisibility::Visible;
-			}
-			
-			bool itFillsGridWithCells;
-		
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-
-			if (itFillsGridWithCells)
-			{
-				return EVisibility::Visible;
-			}
-			
-			EGridOrientation orientation;
-			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;				
-			}
-
-			if (orientation == EGridOrientation::VERTICAL)
-			{
-				return EVisibility::Visible;
-			}
-
-			EGridHorizontalAlignment horizontalAlignment;
-
-			if (gridHorizontalAlignment->GetValue(reinterpret_cast<uint8&>(horizontalAlignment)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;
-			}
-			return horizontalAlignment == EGridHorizontalAlignment::FILL ? EVisibility::Collapsed : EVisibility::Visible;
-		
-		}));
-	
-
-	DetailBuilder.EditDefaultProperty(cellRightMargin)->Visibility(TAttribute<EVisibility>::Create(
-		[useCellsToShapeGrid, fillGridWithCells, gridOrientation, gridHorizontalAlignment]()
-		{		
-			bool itUsesCellsToShapeGrid;
-			
-			useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
-
-			if (itUsesCellsToShapeGrid)
-			{
-				return EVisibility::Visible;
-			}
-			
-			bool itFillsGridWithCells;
-		
-			fillGridWithCells->GetValue(itFillsGridWithCells);
-
-			if (itFillsGridWithCells)
-			{
-				return EVisibility::Visible;
-			}
-			
-			EGridOrientation orientation;
-			if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;				
-			}
-
-			if (orientation == EGridOrientation::VERTICAL)
-			{
-				return EVisibility::Visible;
-			}
-
-			EGridHorizontalAlignment horizontalAlignment;
-
-			if (gridHorizontalAlignment->GetValue(reinterpret_cast<uint8&>(horizontalAlignment)) != FPropertyAccess::Success)
-			{
-				return EVisibility::Collapsed;
-			}
-			
-			return horizontalAlignment == EGridHorizontalAlignment::FILL ? EVisibility::Collapsed : EVisibility::Visible;
-		
-		}));
-	
+					DetailBuilder.HideProperty(cellLeftMargin);
+					DetailBuilder.HideProperty(cellRightMargin);
+				}	
+			}	
+		}
+	}	
 }
 
 #undef LOCTEXT_NAMESPACE
