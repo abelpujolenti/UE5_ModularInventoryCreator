@@ -6,6 +6,7 @@
 #include "Inventory/InventoryWidgetBase.h"
 #include "Grid.generated.h"
 
+class UIGridDataSource;
 class UTestDataSource;
 class ATestDataSource;
 class IIGridDataSource;
@@ -58,7 +59,7 @@ public:
 
 protected:
 
-	virtual void SetGridDataSource(UTestDataSource* gridDataSource);
+	virtual void SetGridDataSource(UObject* gridDataSource);
 	
 	void InitGrid();
 
@@ -110,6 +111,12 @@ protected:
 	EGridHorizontalAlignment _gridHorizontalAlignment;
 
 	#pragma endregion
+
+	UPROPERTY(EditInstanceOnly, Category = "Grid|Cells")
+	TSubclassOf<UObject> _gridDataSourceClass = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UObject> _gridDataSourceInstance = nullptr;
 
 	TScriptInterface<IIGridDataSource> _gridDataSource = nullptr;	
 

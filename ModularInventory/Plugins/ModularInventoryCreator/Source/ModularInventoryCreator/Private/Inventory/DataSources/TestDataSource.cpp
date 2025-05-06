@@ -18,4 +18,6 @@ TSubclassOf<UCell> UTestDataSource::GetCellClass_Implementation()
 void UTestDataSource::FillCellIndex_Implementation(UCell* cell, int index)
 {
 	UTESTCell* myCell = Cast<UTESTCell>(cell);
+
+	myCell->SetText(_items[index % _items.Num()]);
 }

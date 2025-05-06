@@ -9,3 +9,8 @@ void UTESTCell::OnClick()
 {
 	_textBlock->SetText(_text);
 }
+
+void UTESTCell::SetText(FText text) const
+{
+	_textBlock->SetText(text);
+}

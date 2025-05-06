@@ -7,8 +7,16 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Interfaces/IGridDataSource.h"
-#include "Inventory/DataSources/TestDataSource.h"
 #include "Inventory/Scroll/Scroll.h"
+
+void UScrollableGrid::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+
+	_gridDataSourceInstance = NewObject<UObject>(this, _gridDataSourceClass);
+
+	SetGridDataSource(_gridDataSourceInstance);
+}
 
 void UScrollableGrid::Scroll(float deltaDistance)
 {
@@ -38,7 +46,7 @@ float UScrollableGrid::GetMaximumDisplacement() const
 	return 1;
 }
 
-void UScrollableGrid::SetGridDataSource(UTestDataSource* gridDataSource)
+void UScrollableGrid::SetGridDataSource(UObject* gridDataSource)
 {	
 	Super::SetGridDataSource(gridDataSource);
 	
@@ -80,7 +88,7 @@ void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, cons
 		for (int j = 0; j < _columns; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));			
-			cell->OnClick();
+			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _columns * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);	
@@ -109,7 +117,7 @@ void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& c
 		for (int j = 0; j < _rows; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
-			cell->OnClick();
+			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _rows * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);

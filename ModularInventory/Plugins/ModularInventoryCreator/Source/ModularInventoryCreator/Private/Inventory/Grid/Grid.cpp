@@ -1,21 +1,15 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Inventory/Grid/Grid.h"
+﻿#include "Inventory/Grid/Grid.h"
 
 #include "Inventory/Cell.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/SizeBox.h"
 #include "Interfaces/IGridDataSource.h"
-#include "Inventory/DataSources/TestDataSource.h"
 
-void UGrid::SetGridDataSource(UTestDataSource* gridDataSource)
-{	
-	if (!gridDataSource->Implements<UIGridDataSource>())
-	{
-		return;
-	}
+void UGrid::SetGridDataSource(UObject* gridDataSource)
+{
+	checkf(gridDataSource->GetClass()->ImplementsInterface(UIGridDataSource::StaticClass()),
+	TEXT("%s must implement IGridDataSource interface"), *gridDataSource->GetName());
 	
 	_gridDataSource.SetObject(gridDataSource);
 	_gridDataSource.SetInterface(Cast<IIGridDataSource>(gridDataSource));
@@ -232,7 +226,7 @@ void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPos
 		for (int j = 0; j < _rows; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
-			cell->OnClick();
+			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _rows * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
@@ -253,7 +247,7 @@ void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& min
 		for (int j = 0; j < _columns; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
-			cell->OnClick();
+			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _columns * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);

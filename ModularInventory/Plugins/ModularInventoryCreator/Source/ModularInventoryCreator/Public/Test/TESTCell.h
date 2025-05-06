@@ -16,6 +16,8 @@ class MODULARINVENTORYCREATOR_API UTESTCell : public UCell
 public:
 
 	virtual void OnClick() override;
+
+	void SetText(FText text) const;
 	
 private:
 

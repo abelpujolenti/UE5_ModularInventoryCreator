@@ -29,10 +29,12 @@ public:
 
 protected:
 
+	virtual void NativeOnInitialized() override;
+
 	virtual ~UScrollableGrid() override = default;
 	
 	UFUNCTION(BlueprintCallable, Category = "Grid|Content")
-	virtual void SetGridDataSource(UTestDataSource* gridDataSource) override;
+	virtual void SetGridDataSource(UObject* gridDataSource) override;
 
 	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
 		int& currentYPosition) override;
@@ -40,7 +42,7 @@ protected:
 	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
 		int& currentYPosition) override;
 
-	UPROPERTY(EditInstanceOnly, Category = "Grid")
+	UPROPERTY(EditAnywhere, Category = "Grid")
 	bool _isScrollable;
 	
 	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))

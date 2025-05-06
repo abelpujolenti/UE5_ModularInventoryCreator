@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InventoryWidgetBase.h"
-#include "Components/Button.h"
 #include "Cell.generated.h"
 
 class UImage;
@@ -13,8 +12,7 @@ class UImage;
  */
 UCLASS(Abstract)
 class MODULARINVENTORYCREATOR_API UCell : public UInventoryWidgetBase
-{
-	
+{	
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Cell|Size")

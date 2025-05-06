@@ -6,7 +6,7 @@
 #include "Interfaces/IGridDataSource.h"
 #include "TestDataSource.generated.h"
 
-UCLASS(Blueprintable, meta = (ImplementsInterface = "IGridDataSource"))
+UCLASS(Blueprintable)
 class MODULARINVENTORYCREATOR_API UTestDataSource : public UObject, public IIGridDataSource
 {
 
