@@ -4,33 +4,52 @@
 
 #include "CoreMinimal.h"
 #include "Grid.h"
+#include "../Private/Interfaces/IScrollable.h"
 #include "ScrollableGrid.generated.h"
 
 /**
  * 
  */
-UCLASS()
-class MODULARINVENTORYCREATOR_API UScrollableGrid : public UGrid
+class UScroll;
+
+UCLASS(Blueprintable)
+class MODULARINVENTORYCREATOR_API UScrollableGrid : public UGrid, public IIScrollable
 {
 
 	friend class FScrollableGridEditor;
 
 public:
+	virtual void Scroll(float deltaDistance) override;
+	
+	virtual EGridOrientation GetOrientation() const override;
+	
+	virtual float GetLength() const override;
+	
+	virtual float GetMaximumDisplacement() const override;
 
 protected:
 
-	virtual ~UScrollableGrid() override = default;
-
 	virtual void NativeOnInitialized() override;
+
+	virtual ~UScrollableGrid() override = default;
+	
+	UFUNCTION(BlueprintCallable, Category = "Grid|Content")
+	virtual void SetGridDataSource(UObject* gridDataSource) override;
 
 	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
 		int& currentYPosition) override;
 
 	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
 		int& currentYPosition) override;
+
+	UPROPERTY(EditAnywhere, Category = "Grid")
+	bool _isScrollable;
 	
 	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
-	int _cellsExtraLines;
+	int _extraLines;
+	
+	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable")
+	TObjectPtr<UScroll> _scroll = nullptr;
 
 private:	
 	

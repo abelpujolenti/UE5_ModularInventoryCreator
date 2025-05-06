@@ -1,18 +1,22 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "Inventory/Grid/Grid.h"
+﻿#include "Inventory/Grid/Grid.h"
 
 #include "Inventory/Cell.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-#include "Components/GridPanel.h"
 #include "Components/SizeBox.h"
+#include "Interfaces/IGridDataSource.h"
 
-void UGrid::NativeOnInitialized()
+void UGrid::SetGridDataSource(UObject* gridDataSource)
 {
-	Super::NativeOnInitialized();
+	checkf(gridDataSource->GetClass()->ImplementsInterface(UIGridDataSource::StaticClass()),
+	TEXT("%s must implement IGridDataSource interface"), *gridDataSource->GetName());
+	
+	_gridDataSource.SetObject(gridDataSource);
+	_gridDataSource.SetInterface(Cast<IIGridDataSource>(gridDataSource));
+}
 
+void UGrid::InitGrid()
+{
 	TObjectPtr<UWorld> world = GetWorld();
 
 	checkf(world, TEXT("Unable to get a reference of the world"));
@@ -23,7 +27,7 @@ void UGrid::NativeOnInitialized()
 
 	if (_useCellClassSizes)
 	{
-		TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);		
+		TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
 		_cellSize = cell->GetCellSize();
 	}
 
@@ -32,12 +36,7 @@ void UGrid::NativeOnInitialized()
 		_gridDimensions = FVector2D(_gridPadding.Left + _columns * (_cellLeftMargin + _cellSize.X + _cellRightMargin) + _gridPadding.Right,
 			_gridPadding.Top + _rows * (_cellTopMargin + _cellSize.Y + _cellBottomMargin) + _gridPadding.Bottom);
 	}
-
-	InitGrid(world);
-}
-
-void UGrid::InitGrid(const TObjectPtr<UWorld>& world)
-{	
+	
 	_sizeBox->SetRenderTranslation(_gridPivot);
 
 	_sizeBoxSlot->SetSize(_gridDimensions);
@@ -226,7 +225,8 @@ void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPos
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _rows; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _rows * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
@@ -246,7 +246,8 @@ void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& min
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _columns; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _cellClass);
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _columns * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);

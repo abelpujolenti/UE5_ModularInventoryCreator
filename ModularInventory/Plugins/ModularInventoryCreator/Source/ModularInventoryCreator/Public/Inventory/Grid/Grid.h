@@ -3,10 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "IDetailCustomization.h"
 #include "Inventory/InventoryWidgetBase.h"
 #include "Grid.generated.h"
 
+class UIGridDataSource;
+class UTestDataSource;
+class ATestDataSource;
+class IIGridDataSource;
 class UCanvasPanelSlot;
 class USizeBoxSlot;
 class USizeBox;
@@ -42,7 +45,7 @@ enum class EGridHorizontalAlignment : uint8
 	RIGHT UMETA(DisplayName = "Right")
 };
 
-UCLASS()
+UCLASS(Abstract)
 class MODULARINVENTORYCREATOR_API UGrid : public UInventoryWidgetBase
 {
 	friend class FGridEditor;
@@ -54,16 +57,11 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-private:
-
-	UPROPERTY(Transient, meta = (HideInDetailPanel))
-	bool _isOrientationVertical;
-
 protected:
 
-	virtual void NativeOnInitialized() override;
+	virtual void SetGridDataSource(UObject* gridDataSource);
 	
-	void InitGrid(const TObjectPtr<UWorld>& world);
+	void InitGrid();
 
 	void CreateBoundaries(const TObjectPtr<UWorld>& world);
 
@@ -71,7 +69,7 @@ protected:
 		int& minYBounds, const int& maxYBounds, int& currentYPosition);
 
 	static void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins);
-	static void AdjustCellsCountWithClamp(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins); 
+	static void AdjustCellsCountWithClamp(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins);
 	
 	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition, int& currentYPosition);
 	
@@ -114,10 +112,15 @@ protected:
 
 	#pragma endregion
 
-	#pragma region Cells
+	UPROPERTY(EditInstanceOnly, Category = "Grid|Cells")
+	TSubclassOf<UObject> _gridDataSourceClass = nullptr;
 
-	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
-	TSubclassOf<UCell> _cellClass = nullptr;
+	UPROPERTY()
+	TObjectPtr<UObject> _gridDataSourceInstance = nullptr;
+
+	TScriptInterface<IIGridDataSource> _gridDataSource = nullptr;	
+
+	#pragma region Cells
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Cells")
 	bool _useCellClassSizes;
