@@ -10,14 +10,16 @@
 /**
  * 
  */
+class UScrollBox;
 class UScroll;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTest, float, number);
+
 UCLASS(Blueprintable)
-class MODULARINVENTORYCREATOR_API UScrollableGrid : public UGrid, public IIScrollable
+class MODULARINVENTORYCREATOR_API UScrollableGrid : public UBaseGrid, public IIScrollable
 {
-
-	friend class FScrollableGridEditor;
-
+	friend class UFactoryGrid;
+	
 public:
 	virtual void Scroll(float deltaDistance) override;
 	
@@ -29,27 +31,37 @@ public:
 
 protected:
 
-	virtual void NativeOnInitialized() override;
+	virtual void InitializeGrid(const UGridStructure& gridStructure) override;
 
-	virtual ~UScrollableGrid() override = default;
-	
-	UFUNCTION(BlueprintCallable, Category = "Grid|Content")
-	virtual void SetGridDataSource(UObject* gridDataSource) override;
+	virtual void InstantiateGrid() override;
 
-	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
-		int& currentYPosition) override;
+	virtual void InstantiateWidgets() override;
+
+	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
 		int& currentYPosition) override;
-
-	UPROPERTY(EditAnywhere, Category = "Grid")
-	bool _isScrollable;
 	
-	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
+	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
+		int& currentYPosition) override;
+
+	UPROPERTY()
+	TObjectPtr<UScrollBox> _scrollBox = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UCanvasPanelSlot> _scrollBoxSlot = nullptr;
+	
+	UPROPERTY()
 	int _extraLines;
 	
-	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable")
+	UPROPERTY()
 	TObjectPtr<UScroll> _scroll = nullptr;
+
+	UPROPERTY(BlueprintAssignable, Category = "Test")
+	FTest _test;
+
+	UFUNCTION(BlueprintCallable, Category = "Test")
+	void CallMe(float currentOffset);
 
 private:	
 	

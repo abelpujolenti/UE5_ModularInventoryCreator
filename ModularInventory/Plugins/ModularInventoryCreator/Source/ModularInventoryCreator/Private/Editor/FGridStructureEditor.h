@@ -3,11 +3,12 @@
 #include "CoreMinimal.h"
 #include "IDetailCustomization.h"
 
-class FScrollableGridEditor : public IDetailCustomization
+
+class FGridStructureEditor : public IDetailCustomization
 {
 public:
 
 	static TSharedRef<IDetailCustomization> MakeInstance();
 
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;	
 };
