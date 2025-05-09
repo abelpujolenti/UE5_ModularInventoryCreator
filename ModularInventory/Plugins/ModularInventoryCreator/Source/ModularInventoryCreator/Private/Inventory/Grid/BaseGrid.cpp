@@ -11,18 +11,6 @@
 #include "Factories/FactoryInterfaceInstance.h"
 #include "Interfaces/IGridItemDataSource.h"
 
-void UBaseGrid::SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSourceClass)
-{
-	InitGridDataSource(gridDataSourceClass);
-
-	_fillFunction();
-}
-
-void UBaseGrid::InitGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSourceClass)
-{
-	_gridDataSource = UFactoryInterfaceInstance::CreateInterfaceInstance<IIGridItemDataSource, UBaseItemDataSource>(gridDataSourceClass);
-}
-
 void UBaseGrid::InitializeGrid(const UGridStructure& gridStructure)
 {	
 	_gridPivot = gridStructure.gridPivot;
@@ -71,6 +59,18 @@ void UBaseGrid::InstantiateGrid()
 	CreateBoundaries(world);
 }
 
+void UBaseGrid::SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSourceClass)
+{
+	InitGridDataSource(gridDataSourceClass);
+
+	_fillFunction();
+}
+
+void UBaseGrid::InitGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSourceClass)
+{
+	_gridDataSource = UFactoryInterfaceInstance::CreateInterfaceInstance<IIGridItemDataSource, UBaseItemDataSource>(gridDataSourceClass);
+}
+
 void UBaseGrid::InstantiateWidgets()
 {
 	TObjectPtr<UCanvasPanel> rootCanvasPanel {WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass())};
@@ -85,7 +85,7 @@ void UBaseGrid::InstantiateWidgets()
 	_sizeBoxSlot->SetSize(_gridDimensions);
 
 	_canvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass());
-	_sizeBox->AddChild(_canvas);	
+	_sizeBox->AddChild(_canvas);
 
 	TObjectPtr<UImage> background {WidgetTree->ConstructWidget<UImage>(UImage::StaticClass())};
 
@@ -107,11 +107,11 @@ void UBaseGrid::CreateBoundaries(const TObjectPtr<UWorld>& world)
 {
 	int minXBounds = _gridPadding.Left;
 	int maxXBounds = _gridDimensions.X - _gridPadding.Right;
-	int currentXPosition = minXBounds + _cellLeftMargin;
+	int initialXPosition = minXBounds + _cellLeftMargin;
 
 	int minYBounds = _gridPadding.Top;
 	int maxYBounds = _gridDimensions.Y - _gridPadding.Bottom;
-	int currentYPosition = minYBounds + _cellTopMargin;
+	int initialYPosition = minYBounds + _cellTopMargin;
 
 	const bool isOrientationVertical = _gridOrientation == EGridOrientation::VERTICAL;
 
@@ -119,18 +119,18 @@ void UBaseGrid::CreateBoundaries(const TObjectPtr<UWorld>& world)
 	{
 		if (_fillGridWithCells)
 		{	
-			AdjustCellsCount(_columns, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellLeftMargin, _cellRightMargin});
-			AdjustCellsCount(_rows, _cellSize.Y, minYBounds, maxYBounds, FVector2D{_cellTopMargin, _cellBottomMargin});
+			AdjustCellsCount(_columns, _cellSize.X, minXBounds, maxXBounds, {_cellLeftMargin, _cellRightMargin});
+			AdjustCellsCount(_rows, _cellSize.Y, minYBounds, maxYBounds, {_cellTopMargin, _cellBottomMargin});
 		}
 		else
 		{
-			AdjustBoundaries(isOrientationVertical, minXBounds, maxXBounds, currentXPosition, minYBounds, maxYBounds, currentYPosition);
+			AdjustBoundaries(isOrientationVertical, minXBounds, maxXBounds, initialXPosition, minYBounds, maxYBounds, initialYPosition);
 		}
 	}
 	
 	if (isOrientationVertical)
 	{
-		CreateVerticalGrid(world, currentXPosition, minYBounds, currentYPosition);
+		CreateVerticalGrid(world);
 		
 		_fillFunction = [&]()
 		{
@@ -145,22 +145,22 @@ void UBaseGrid::CreateBoundaries(const TObjectPtr<UWorld>& world)
 		return;
 	}
 	
-	CreateHorizontalGrid(world, minXBounds, currentXPosition, currentYPosition);
+	CreateHorizontalGrid(world);
 
 	_fillFunction = [&]()
 	{	
-		for (int i = 0; i < _columns; ++i)
+		for (int i = 0; i < _rows; ++i)
 		{
-			for (int j = 0; j < _rows; ++j)
+			for (int j = 0; j < _columns; ++j)
 			{
-				FillCell(_cellGrid[i][j], _rows * i + j);
+				FillCell(_cellGrid[i][j], _columns * i + j);
 			}
 		}
 	};
 }
 
-void UBaseGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& currentXPosition,
-	int& minYBounds, const int& maxYBounds, int& currentYPosition)
+void UBaseGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& initialXPosition,
+	int& minYBounds, const int& maxYBounds, int& initialYPosition)
 {
 	if (isOrientationVertical)
 	{
@@ -179,14 +179,14 @@ void UBaseGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBoun
 			if (finalAvailableVerticalSpace < 0)
 			{
 				AdjustCellsCountWithClamp(_rows, _cellSize.Y, minYBounds, maxYBounds, FVector2D{_cellTopMargin, _cellBottomMargin});
-				currentYPosition = minYBounds;
+				initialYPosition = minYBounds;
 				return;
 			}
 
 			_cellTopMargin = finalAvailableVerticalSpace / cellsPerColumn / 2;
 			_cellBottomMargin = _cellTopMargin;
 			AdjustCellsCountWithClamp(_columns, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellLeftMargin, _cellRightMargin});
-			currentYPosition = minYBounds + _cellTopMargin;
+			initialYPosition = minYBounds + _cellTopMargin;
 			return;
 		}
 
@@ -213,7 +213,7 @@ void UBaseGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBoun
 			minYBounds = maxYBounds - cellsPerColumn * (_cellTopMargin + _cellSize.Y + _cellBottomMargin);
 		}
 
-		currentYPosition = minYBounds + _cellTopMargin;
+		initialYPosition = minYBounds + _cellTopMargin;
 
 		return;
 	}
@@ -233,13 +233,13 @@ void UBaseGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBoun
 		if (finalAvailableHorizontalSpace < 0)
 		{
 			AdjustCellsCountWithClamp(_columns, _cellSize.X, minXBounds, maxXBounds, FVector2D{_cellLeftMargin, _cellRightMargin});			
-			currentXPosition = minXBounds;
+			initialXPosition = minXBounds;
 			return;
 		}
 		
 		_cellLeftMargin = finalAvailableHorizontalSpace / cellsPerRow / 2;
 		_cellRightMargin = _cellLeftMargin;		
-		currentXPosition = minXBounds + _cellLeftMargin;
+		initialXPosition = minXBounds + _cellLeftMargin;
 		return;
 	}
 
@@ -266,7 +266,7 @@ void UBaseGrid::AdjustBoundaries(const bool isOrientationVertical, int& minXBoun
 		minXBounds = maxXBounds - cellsPerRow * spaceOccupiedPerCell;
 	}
 
-	currentXPosition = minXBounds + _cellLeftMargin;
+	initialXPosition = minXBounds + _cellLeftMargin;
 }
 
 void UBaseGrid::AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds,

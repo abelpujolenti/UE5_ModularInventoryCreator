@@ -31,31 +31,29 @@ public:
 #endif
 
 protected:
-	
-	UFUNCTION(BlueprintCallable, Category = "Grid|Content")
-	void SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource);
-	
-	void InitGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource);
 
 	virtual void InitializeGrid(const UGridStructure& gridStructure);
 
 	virtual void InstantiateGrid();
+	
+	UFUNCTION(BlueprintCallable, Category = "Grid|Content")
+	virtual void SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource);
+	
+	void InitGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource);
 
 	virtual void InstantiateWidgets();
 
 	void CreateBoundaries(const TObjectPtr<UWorld>& world);
 	
-	void AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& currentXPosition,
-		int& minYBounds, const int& maxYBounds, int& currentYPosition);
+	void AdjustBoundaries(const bool isOrientationVertical, int& minXBounds, const int& maxXBounds, int& initialXPosition,
+		int& minYBounds, const int& maxYBounds, int& initialYPosition);
 	
 	static void AdjustCellsCount(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins);
 	static void AdjustCellsCountWithClamp(int& cellsPerLine, const float& cellSize, const int& minBounds, const int& maxBounds, const FVector2D& margins);
 	
-	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
-		int& currentYPosition) PURE_VIRTUAL(UBaseGrid::CreateHorizontalGrid);
+	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world) PURE_VIRTUAL(UBaseGrid::CreateHorizontalGrid);
 	
-	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
-		int& currentYPosition) PURE_VIRTUAL(UBaseGrid::CreateVerticalGrid);
+	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world) PURE_VIRTUAL(UBaseGrid::CreateVerticalGrid);
 
 	void FillCell(TObjectPtr<UCell> cell, int index) const;
 

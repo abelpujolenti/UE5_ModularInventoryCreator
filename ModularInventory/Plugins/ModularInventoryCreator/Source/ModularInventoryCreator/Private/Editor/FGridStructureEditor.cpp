@@ -34,6 +34,7 @@ void FGridStructureEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 
 	TSharedPtr<IPropertyHandle> isScrollable = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, isScrollable));
 	TSharedPtr<IPropertyHandle> extraLines = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, extraLines));
+	TSharedPtr<IPropertyHandle> scrollDistanceMultiplier = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, scrollDistanceMultiplier));
 	
 	auto RefreshEditor = [&DetailBuilder]()
 	{
@@ -63,7 +64,13 @@ void FGridStructureEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 	if (!isItScrollable)
 	{
 		DetailBuilder.HideProperty(extraLines);
+		DetailBuilder.HideProperty(scrollDistanceMultiplier);
 	}
+
+	DetailBuilder.EditDefaultProperty(extraLines)
+		->DisplayName(orientation == EGridOrientation::VERTICAL
+			? FText::FromString("Extra Columns")
+			: FText::FromString("Extra Rows"));	
 
 	if (itUsesCellsToShapeGrid || itFillsGridWithCells)
 	{		
@@ -84,19 +91,6 @@ void FGridStructureEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 	{		
 		DetailBuilder.HideProperty(cellSize);
 	}
-
-	FText displayName;
-	
-	if (gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation)) != FPropertyAccess::Success)
-	{
-		displayName = FText::FromString("");
-	}
-	else
-	{
-		displayName = orientation == EGridOrientation::VERTICAL ? FText::FromString("Extra Columns") : FText::FromString("Extra Rows");	
-	}
-
-	DetailBuilder.EditDefaultProperty(extraLines)->DisplayName(displayName);	
 
 	if (itUsesCellsToShapeGrid)
 	{		

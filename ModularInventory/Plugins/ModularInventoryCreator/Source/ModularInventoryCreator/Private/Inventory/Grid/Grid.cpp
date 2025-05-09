@@ -6,8 +6,14 @@
 #include "Components/SizeBox.h"
 #include "Interfaces/IGridItemDataSource.h"
 
-void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition, const int& minYBounds, int& currentYPosition)
+void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world)
 {
+	int minXBounds = _gridPadding.Left;
+	int currentXPosition = minXBounds + _cellLeftMargin;
+
+	int minYBounds = _gridPadding.Top;
+	int currentYPosition = minYBounds + _cellTopMargin;
+	
 	for (int i = 0; i < _columns; ++i)
 	{		
 		TArray<TObjectPtr<UCell>> newLine;
@@ -27,8 +33,14 @@ void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPos
 	}
 }
 
-void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition, int& currentYPosition)
-{		
+void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world)
+{
+	int minXBounds = _gridPadding.Left;
+	int currentXPosition = minXBounds + _cellLeftMargin;
+
+	int minYBounds = _gridPadding.Top;
+	int currentYPosition = minYBounds + _cellTopMargin;
+	
 	for (int i = 0; i < _rows; ++i)
 	{		
 		TArray<TObjectPtr<UCell>> newLine;

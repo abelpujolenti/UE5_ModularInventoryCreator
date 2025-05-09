@@ -45,6 +45,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
 	int extraLines;
+	
+	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 0.1f, UIMin = 0.1f))
+	float scrollDistanceMultiplier;
 
 	#pragma endregion
 

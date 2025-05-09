@@ -33,35 +33,49 @@ protected:
 
 	virtual void InitializeGrid(const UGridStructure& gridStructure) override;
 
+	void InitScroll();
+
 	virtual void InstantiateGrid() override;
+
+	virtual void SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource) override;
+	void CalculateVerticalDisplacement();
+	void CalculateHorizontalDisplacement();
 
 	virtual void InstantiateWidgets() override;
 
 	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void ScrollVertical(float deltaDistance);
+	virtual void ScrollHorizontal(float deltaDistance);
 
-	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
-		int& currentYPosition) override;
-	
-	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
-		int& currentYPosition) override;
-
-	UPROPERTY()
-	TObjectPtr<UScrollBox> _scrollBox = nullptr;
+	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world) override;	
+	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world) override;
 
 	UPROPERTY()
-	TObjectPtr<UCanvasPanelSlot> _scrollBoxSlot = nullptr;
+	TObjectPtr<UCanvasPanel> _clippingCanvas = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<USizeBox> _clippingSizeBox = nullptr;
 	
 	UPROPERTY()
 	int _extraLines;
-	
+
 	UPROPERTY()
-	TObjectPtr<UScroll> _scroll = nullptr;
+	float _scrollDistanceMultiplier;
 
-	UPROPERTY(BlueprintAssignable, Category = "Test")
-	FTest _test;
+	UPROPERTY()
+	float _minScrollDisplacement {0};
 
-	UFUNCTION(BlueprintCallable, Category = "Test")
-	void CallMe(float currentOffset);
+	UPROPERTY()
+	float _maxScrollDisplacement;
+
+	UPROPERTY()
+	float _currentScrollOffset;
+
+	std::function<void(float)> _scrollFunction;
+
+	std::function<float()> _getLengthFunction;
+
+	std::function<void()> _calculateDisplacementFunction;
 
 private:	
 	
