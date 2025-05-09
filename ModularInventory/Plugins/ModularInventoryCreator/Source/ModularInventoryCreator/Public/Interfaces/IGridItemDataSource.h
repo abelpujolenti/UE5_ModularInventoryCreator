@@ -3,15 +3,15 @@
 #pragma once
 #include "Inventory/Cell.h"
 
-#include "IGridDataSource.generated.h"
+#include "IGridItemDataSource.generated.h"
 
 UINTERFACE(MinimalAPI, BlueprintType)
-class UIGridDataSource : public UInterface
+class UIGridItemDataSource : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class MODULARINVENTORYCREATOR_API IIGridDataSource
+class MODULARINVENTORYCREATOR_API IIGridItemDataSource
 {
 public:
 

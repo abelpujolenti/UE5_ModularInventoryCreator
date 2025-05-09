@@ -3,19 +3,67 @@
 
 #include "Inventory/Grid/ScrollableGrid.h"
 
+#include "Blueprint/WidgetTree.h"
 #include "Inventory/Cell.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-#include "Interfaces/IGridDataSource.h"
+#include "Components/ScrollBox.h"
+#include "Components/SizeBox.h"
+#include "Interfaces/IGridItemDataSource.h"
 #include "Inventory/Scroll/Scroll.h"
+#include "ModularInventoryCreator/Debug/DebugManager.h"
 
-void UScrollableGrid::NativeOnInitialized()
+void UScrollableGrid::InitializeGrid(const UGridStructure& gridStructure)
+{	
+	_extraLines = gridStructure.extraLines;
+	
+	Super::InitializeGrid(gridStructure);
+}
+
+void UScrollableGrid::InstantiateGrid()
+{	
+	_extraLines *= 2;
+
+	if (!_useCellsToShapeGrid && !_fillGridWithCells)
+	{
+		if (_gridOrientation == EGridOrientation::VERTICAL)
+		{
+			AdjustCellsCount(_columns, _cellSize.X, _gridPadding.Left,
+				_gridDimensions.X - _gridPadding.Right,
+				FVector2D{_cellLeftMargin, _cellRightMargin});
+		}
+		else
+		{
+			AdjustCellsCount(_rows, _cellSize.Y, _gridPadding.Top,
+				_gridDimensions.Y - _gridPadding.Bottom,
+				FVector2D{_cellTopMargin, _cellBottomMargin});
+		}
+	}
+
+	Super::InstantiateGrid();
+}
+
+void UScrollableGrid::InstantiateWidgets()
 {
-	Super::NativeOnInitialized();
+	Super::InstantiateWidgets();
+	
+	_scrollBox = WidgetTree->ConstructWidget<UScrollBox>(UScrollBox::StaticClass());
 
-	_gridDataSourceInstance = NewObject<UObject>(this, _gridDataSourceClass);
+	_scrollBoxSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(_scrollBox));
 
-	SetGridDataSource(_gridDataSourceInstance);
+	_scrollBoxSlot->SetSize(_gridDimensions);
+}
+
+FReply UScrollableGrid::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	float wheelData {InMouseEvent.GetWheelDelta()};
+
+	if (GEngine)
+	{
+		UDebugManager::DebugMessage(FString::Printf(TEXT("WheelData: %f"), wheelData));
+	}
+	
+	return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
 }
 
 void UScrollableGrid::Scroll(float deltaDistance)
@@ -46,49 +94,38 @@ float UScrollableGrid::GetMaximumDisplacement() const
 	return 1;
 }
 
-void UScrollableGrid::SetGridDataSource(UObject* gridDataSource)
+void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition, const int& minYBounds,
+	int& currentYPosition)
 {	
-	Super::SetGridDataSource(gridDataSource);
-	
-	if (_isScrollable)
+	for (int i = 0; i < _columns + _extraLines; ++i)
 	{
-		_extraLines *= 2;
-
-		if (!_useCellsToShapeGrid && !_fillGridWithCells)
-		{		
-			if (_gridOrientation == EGridOrientation::VERTICAL)
-			{
-				AdjustCellsCount(_columns, _cellSize.X, _gridPadding.Left, _gridDimensions.X - _gridPadding.Right,
-					FVector2D{_cellLeftMargin, _cellRightMargin});
-			}
-			else
-			{
-				AdjustCellsCount(_rows, _cellSize.Y, _gridPadding.Top, _gridDimensions.Y - _gridPadding.Bottom,
-					FVector2D{_cellTopMargin, _cellBottomMargin});
-			}
-		}	
+		TArray<TObjectPtr<UCell>> newLine;
+		for (int j = 0; j < _rows; ++j)
+		{
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			FillCell(cell, _rows * i + j);
+			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_sizeBox->AddChild(cell));
+			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
+			canvasPanelSlot->SetSize(_cellSize);
+			newLine.Add(cell);
+			currentYPosition += _cellTopMargin + _cellSize.Y + _cellBottomMargin;	
+		}
+		_cellGrid.Add(newLine);
+		currentYPosition = minYBounds + _cellTopMargin;
+		currentXPosition += _cellLeftMargin + _cellSize.X + _cellRightMargin;
 	}
-
-	InitGrid();
 }
 
 void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
-                                           int& currentYPosition)
-{	
-	Super::CreateHorizontalGrid(world, minXBounds, currentXPosition, currentYPosition);
-
-	if (!_isScrollable)
-	{
-		return;
-	}
-	
-	for (int i = 0; i < _extraLines; ++i)
+    int& currentYPosition)
+{		
+	for (int i = 0; i < _rows + _extraLines; ++i)
 	{
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _columns; ++j)
 		{
 			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));			
-			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _columns * i + j);
+			FillCell(cell, _columns * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);	
@@ -101,31 +138,7 @@ void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, cons
 	}
 }
 
-void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition, const int& minYBounds,
-	int& currentYPosition)
-{	
-	Super::CreateVerticalGrid(world, currentXPosition, minYBounds, currentYPosition);
-
-	if (!_isScrollable)
-	{
-		return;
-	}
-
-	for (int i = 0; i < _extraLines; ++i)
-	{
-		TArray<TObjectPtr<UCell>> newLine;
-		for (int j = 0; j < _rows; ++j)
-		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
-			_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, _rows * i + j);
-			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
-			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
-			canvasPanelSlot->SetSize(_cellSize);
-			newLine.Add(cell);
-			currentYPosition += _cellTopMargin + _cellSize.Y + _cellBottomMargin;	
-		}
-		_cellGrid.Add(newLine);
-		currentYPosition = minYBounds + _cellTopMargin;
-		currentXPosition += _cellLeftMargin + _cellSize.X + _cellRightMargin;
-	}
+void UScrollableGrid::CallMe(float currentOffset)
+{
+	_test.Broadcast(currentOffset);
 }

@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interfaces/IGridDataSource.h"
-#include "TestDataSource.generated.h"
+#include "Interfaces/IGridItemDataSource.h"
+#include "BaseItemDataSource.generated.h"
 
 UCLASS(Blueprintable)
-class MODULARINVENTORYCREATOR_API UTestDataSource : public UObject, public IIGridDataSource
+class MODULARINVENTORYCREATOR_API UBaseItemDataSource : public UObject, public IIGridItemDataSource
 {
 
 public:
