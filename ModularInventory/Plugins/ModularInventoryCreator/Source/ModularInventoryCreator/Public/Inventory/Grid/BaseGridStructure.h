@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DataSources/BaseItemDataSource.h"
-#include "GridStructure.generated.h"
+#include "../DataSources/BaseItemDataSource.h"
+#include "Inventory/Scroll/BaseScrollBarProperties.h"
+#include "BaseGridStructure.generated.h"
 
 UENUM(BlueprintType)
 enum class EGridOrientation : uint8
@@ -32,7 +33,7 @@ enum class EGridHorizontalAlignment : uint8
 };
 
 UCLASS(Blueprintable)
-class MODULARINVENTORYCREATOR_API UGridStructure : public UObject
+class MODULARINVENTORYCREATOR_API UBaseGridStructure : public UObject
 {
 	friend class FGridStructureEditor;
 
@@ -40,14 +41,20 @@ public:
 
 	#pragma region Scroll
 
-	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable")
+	UPROPERTY(EditAnywhere, Category = "Grid|Scroll")
 	bool isScrollable;
 	
-	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 1, UIMin = 1))
+	UPROPERTY(EditAnywhere, Category = "Grid|Scroll", meta = (ClampMin = 1, UIMin = 1))
 	int extraLines;
 	
-	UPROPERTY(EditAnywhere, Category = "Grid|Scrollable", meta = (ClampMin = 0.1f, UIMin = 0.1f))
+	UPROPERTY(EditAnywhere, Category = "Grid|Scroll", meta = (ClampMin = 0.1f, UIMin = 0.1f))
 	float scrollDistanceMultiplier;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Scroll")
+	bool hasScrollBar;
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Scroll")
+	TSubclassOf<UBaseScrollBarProperties> scrollBarClass = nullptr;
 
 	#pragma endregion
 
@@ -78,7 +85,7 @@ public:
 	EGridHorizontalAlignment gridHorizontalAlignment;
 
 	UPROPERTY(EditAnywhere, Category = "Grid|Layout")
-	TObjectPtr<UTexture2D> background;
+	TObjectPtr<UTexture2D> background = nullptr;
 
 	#pragma endregion
 

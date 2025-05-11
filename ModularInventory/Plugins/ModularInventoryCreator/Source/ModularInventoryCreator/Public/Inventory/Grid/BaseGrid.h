@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Inventory/GridStructure.h"
+#include "Inventory/Grid/BaseGridStructure.h"
 #include "Inventory/InventoryWidgetBase.h"
 #include "BaseGrid.generated.h"
 
@@ -30,9 +30,11 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
+	virtual ~UBaseGrid() override = default;
+
 protected:
 
-	virtual void InitializeGrid(const UGridStructure& gridStructure);
+	virtual void InitializeGrid(const UBaseGridStructure& gridStructure);
 
 	virtual void InstantiateGrid();
 	
@@ -41,7 +43,7 @@ protected:
 	
 	void InitGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource);
 
-	virtual void InstantiateWidgets();
+	virtual void InstantiateWidgets() override;
 
 	void CreateBoundaries(const TObjectPtr<UWorld>& world);
 	
@@ -57,75 +59,43 @@ protected:
 
 	void FillCell(TObjectPtr<UCell> cell, int index) const;
 
-	UPROPERTY()
-	TObjectPtr<UCanvasPanelSlot> _sizeBoxSlot = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<USizeBox> _sizeBox = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<UCanvasPanel> _canvas = nullptr;
-
 	#pragma region Layout
 
-	UPROPERTY()
+	TObjectPtr<UCanvasPanelSlot> _sizeBoxSlot = nullptr;
+	TObjectPtr<USizeBox> _sizeBox = nullptr;
+	TObjectPtr<UCanvasPanel> _canvas = nullptr;
+
 	FVector2D _gridPivot;
 
-	UPROPERTY()
 	bool _useCellsToShapeGrid;
 
-	UPROPERTY()
 	FVector2D _gridDimensions;
-
-	UPROPERTY()
 	FMargin _gridPadding;
-
-	UPROPERTY()
 	EGridOrientation _gridOrientation;
 
-	UPROPERTY()
 	bool _fillGridWithCells;
 
-	UPROPERTY()
 	EGridVerticalAlignment _gridVerticalAlignment;
-
-	UPROPERTY()
 	EGridHorizontalAlignment _gridHorizontalAlignment;
 
-	UPROPERTY()
 	TObjectPtr<UTexture2D> _background;
 
 	#pragma endregion
 
-	UPROPERTY()
 	TSubclassOf<UBaseItemDataSource> _gridDataSourceClass = nullptr;
-
-	TScriptInterface<IIGridItemDataSource> _gridDataSource = nullptr;	
+	TScriptInterface<IIGridItemDataSource> _gridItemDataSource = nullptr;	
 
 	#pragma region Cells
 
-	UPROPERTY()
 	bool _useCellClassSizes;
 
-	UPROPERTY()
 	int _columns;
-
-	UPROPERTY()
 	int _rows;
 
-	UPROPERTY()
 	FVector2D _cellSize;
-
-	UPROPERTY()
 	float _cellTopMargin;
-
-	UPROPERTY()
 	float _cellLeftMargin;
-
-	UPROPERTY()
 	float _cellRightMargin;
-
-	UPROPERTY()
 	float _cellBottomMargin;
 
 	TArray<TArray<TObjectPtr<UCell>>> _cellGrid;

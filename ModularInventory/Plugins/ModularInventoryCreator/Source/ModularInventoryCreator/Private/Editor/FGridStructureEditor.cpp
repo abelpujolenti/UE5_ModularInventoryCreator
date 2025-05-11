@@ -1,7 +1,7 @@
 ﻿#include "FGridStructureEditor.h"
 
 #include "DetailLayoutBuilder.h"
-#include "Inventory/GridStructure.h"
+#include "Inventory/Grid/BaseGridStructure.h"
 #include "Inventory/Grid/BaseGrid.h"
 
 #define LOCTEXT_NAMESPACE "FGridStructureEditor"
@@ -12,59 +12,71 @@ TSharedRef<IDetailCustomization> FGridStructureEditor::MakeInstance()
 }
 
 void FGridStructureEditor::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
-{	
-	TSharedPtr<IPropertyHandle> useCellsToShapeGrid = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, useCellsToShapeGrid));
-	TSharedPtr<IPropertyHandle> gridDimensions = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, gridDimensions));
-	TSharedPtr<IPropertyHandle> fillGridWithCells = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, fillGridWithCells));
-
-	TSharedPtr<IPropertyHandle> gridOrientation = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, gridOrientation));
-	TSharedPtr<IPropertyHandle> gridVerticalAlignment = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, gridVerticalAlignment));
-	TSharedPtr<IPropertyHandle> gridHorizontalAlignment = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, gridHorizontalAlignment));
+{
+	TSharedPtr<IPropertyHandle> isScrollable = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, isScrollable));
+	TSharedPtr<IPropertyHandle> extraLines = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, extraLines));
+	TSharedPtr<IPropertyHandle> scrollDistanceMultiplier = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, scrollDistanceMultiplier));
+	TSharedPtr<IPropertyHandle> hasScrollBar = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, hasScrollBar));
+	TSharedPtr<IPropertyHandle> scrollBarClass = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, scrollBarClass));
 	
-	TSharedPtr<IPropertyHandle> rows = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, rows));
-	TSharedPtr<IPropertyHandle> columns = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, columns));
+	TSharedPtr<IPropertyHandle> useCellsToShapeGrid = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, useCellsToShapeGrid));
+	TSharedPtr<IPropertyHandle> gridDimensions = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, gridDimensions));
+	TSharedPtr<IPropertyHandle> fillGridWithCells = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, fillGridWithCells));
 
-	TSharedPtr<IPropertyHandle> useCellClassSizes = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, useCellClassSizes));
-	TSharedPtr<IPropertyHandle> cellSize = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, cellSize));	
+	TSharedPtr<IPropertyHandle> gridOrientation = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, gridOrientation));
+	TSharedPtr<IPropertyHandle> gridVerticalAlignment = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, gridVerticalAlignment));
+	TSharedPtr<IPropertyHandle> gridHorizontalAlignment = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, gridHorizontalAlignment));
+	
+	TSharedPtr<IPropertyHandle> rows = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, rows));
+	TSharedPtr<IPropertyHandle> columns = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, columns));
 
-	TSharedPtr<IPropertyHandle> cellTopMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, cellTopMargin));
-	TSharedPtr<IPropertyHandle> cellLeftMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, cellLeftMargin));
-	TSharedPtr<IPropertyHandle> cellRightMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, cellRightMargin));
-	TSharedPtr<IPropertyHandle> cellBottomMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, cellBottomMargin));
+	TSharedPtr<IPropertyHandle> useCellClassSizes = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, useCellClassSizes));
+	TSharedPtr<IPropertyHandle> cellSize = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, cellSize));	
 
-	TSharedPtr<IPropertyHandle> isScrollable = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, isScrollable));
-	TSharedPtr<IPropertyHandle> extraLines = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, extraLines));
-	TSharedPtr<IPropertyHandle> scrollDistanceMultiplier = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UGridStructure, scrollDistanceMultiplier));
+	TSharedPtr<IPropertyHandle> cellTopMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, cellTopMargin));
+	TSharedPtr<IPropertyHandle> cellLeftMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, cellLeftMargin));
+	TSharedPtr<IPropertyHandle> cellRightMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, cellRightMargin));
+	TSharedPtr<IPropertyHandle> cellBottomMargin = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UBaseGridStructure, cellBottomMargin));
 	
 	auto RefreshEditor = [&DetailBuilder]()
 	{
 		DetailBuilder.ForceRefreshDetails();
 	};
 
+	isScrollable->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
+	hasScrollBar->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 	useCellsToShapeGrid->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 	gridOrientation->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 	fillGridWithCells->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 	useCellClassSizes->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 	gridHorizontalAlignment->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 	gridVerticalAlignment->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
-	isScrollable->SetOnPropertyValueChanged(FSimpleDelegate::CreateLambda(RefreshEditor));
 
+	bool isItScrollable;
+	bool itHasScrollBar;
 	bool itUsesCellsToShapeGrid;
 	bool itFillsGridWithCells;
 	EGridOrientation orientation;
 	bool itUsesCellClassSizes;
-	bool isItScrollable;
 	
+	isScrollable->GetValue(isItScrollable);
+	hasScrollBar->GetValue(itHasScrollBar);
 	useCellsToShapeGrid->GetValue(itUsesCellsToShapeGrid);
 	fillGridWithCells->GetValue(itFillsGridWithCells);
 	gridOrientation->GetValue(reinterpret_cast<uint8&>(orientation));
 	useCellClassSizes->GetValue(itUsesCellClassSizes);
-	isScrollable->GetValue(isItScrollable);
 
 	if (!isItScrollable)
 	{
 		DetailBuilder.HideProperty(extraLines);
 		DetailBuilder.HideProperty(scrollDistanceMultiplier);
+		DetailBuilder.HideProperty(hasScrollBar);
+		DetailBuilder.HideProperty(scrollBarClass);
+	}
+
+	if (!itHasScrollBar)
+	{
+		DetailBuilder.HideProperty(scrollBarClass);
 	}
 
 	DetailBuilder.EditDefaultProperty(extraLines)

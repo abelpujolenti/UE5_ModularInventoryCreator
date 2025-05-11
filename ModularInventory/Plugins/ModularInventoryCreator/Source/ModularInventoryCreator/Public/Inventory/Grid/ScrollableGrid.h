@@ -4,16 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Grid.h"
-#include "../Private/Interfaces/IScrollable.h"
+#include "Interfaces/IScrollable.h"
 #include "ScrollableGrid.generated.h"
 
 /**
  * 
  */
 class UScrollBox;
-class UScroll;
+class UBaseScrollBar;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTest, float, number);
+template<typename TKey, typename TValue>
+class ObserverMap;
 
 UCLASS(Blueprintable)
 class MODULARINVENTORYCREATOR_API UScrollableGrid : public UBaseGrid, public IIScrollable
@@ -21,25 +22,32 @@ class MODULARINVENTORYCREATOR_API UScrollableGrid : public UBaseGrid, public IIS
 	friend class UFactoryGrid;
 	
 public:
-	virtual void Scroll(float deltaDistance) override;
+
+	virtual void Scroll_Implementation(float deltaDistance) override;
 	
-	virtual EGridOrientation GetOrientation() const override;
-	
-	virtual float GetLength() const override;
-	
-	virtual float GetMaximumDisplacement() const override;
+	virtual EGridOrientation GetOrientation_Implementation() const override;
+
+	virtual float GetWidth_Implementation() const override;
+	virtual float GetHeight_Implementation() const override;
+	virtual float GetLength_Implementation() const override;
+
+	virtual FVector2D GetPivot_Implementation() const override;
+	virtual float GetMaximumDisplacement_Implementation() const override;
+	virtual ObserverMap<EScrollKeys, float>* const UScrollableGrid::GetScrollObserver() const override;
+
+	virtual ~UScrollableGrid() override;
 
 protected:
 
-	virtual void InitializeGrid(const UGridStructure& gridStructure) override;
+	virtual void InitializeGrid(const UBaseGridStructure& gridStructure) override;
 
 	void InitScroll();
 
 	virtual void InstantiateGrid() override;
 
 	virtual void SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource) override;
-	void CalculateVerticalDisplacement();
-	void CalculateHorizontalDisplacement();
+	void CalculateVerticalDisplacement() const;
+	void CalculateHorizontalDisplacement() const;
 
 	virtual void InstantiateWidgets() override;
 
@@ -56,26 +64,20 @@ protected:
 	UPROPERTY()
 	TObjectPtr<USizeBox> _clippingSizeBox = nullptr;
 	
-	UPROPERTY()
 	int _extraLines;
 
-	UPROPERTY()
 	float _scrollDistanceMultiplier;
-
-	UPROPERTY()
+	float _displacement;
 	float _minScrollDisplacement {0};
-
-	UPROPERTY()
 	float _maxScrollDisplacement;
-
-	UPROPERTY()
-	float _currentScrollOffset;
 
 	std::function<void(float)> _scrollFunction;
 
 	std::function<float()> _getLengthFunction;
 
 	std::function<void()> _calculateDisplacementFunction;
+
+	ObserverMap<EScrollKeys, float>* _scrollObserver = nullptr;
 
 private:	
 	

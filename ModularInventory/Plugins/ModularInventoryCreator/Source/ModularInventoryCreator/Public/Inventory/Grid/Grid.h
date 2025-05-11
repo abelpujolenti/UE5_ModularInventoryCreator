@@ -32,6 +32,8 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
+	virtual ~UGrid() override = default;
+
 protected:
 	
 	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world) override;

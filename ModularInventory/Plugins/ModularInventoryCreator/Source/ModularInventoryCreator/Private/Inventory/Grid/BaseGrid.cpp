@@ -11,7 +11,7 @@
 #include "Factories/FactoryInterfaceInstance.h"
 #include "Interfaces/IGridItemDataSource.h"
 
-void UBaseGrid::InitializeGrid(const UGridStructure& gridStructure)
+void UBaseGrid::InitializeGrid(const UBaseGridStructure& gridStructure)
 {	
 	_gridPivot = gridStructure.gridPivot;
 	_useCellsToShapeGrid = gridStructure.useCellsToShapeGrid;
@@ -40,11 +40,11 @@ void UBaseGrid::InstantiateGrid()
 	InitGridDataSource(_gridDataSourceClass);
 
 	TObjectPtr<UWorld> world = {GetWorld()};
-
 	checkf(world, TEXT("Unable to get a reference of the world"));
+	
 	if (_useCellClassSizes)
 	{
-		TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+		TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));
 		_cellSize = cell->GetCellSize();
 	}
 
@@ -68,7 +68,7 @@ void UBaseGrid::SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSourc
 
 void UBaseGrid::InitGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSourceClass)
 {
-	_gridDataSource = UFactoryInterfaceInstance::CreateInterfaceInstance<IIGridItemDataSource, UBaseItemDataSource>(gridDataSourceClass);
+	_gridItemDataSource = UFactoryInterfaceInstance::CreateInterfaceInstance<IIGridItemDataSource, UBaseItemDataSource>(gridDataSourceClass);
 }
 
 void UBaseGrid::InstantiateWidgets()
@@ -301,7 +301,7 @@ void UBaseGrid::AdjustCellsCountWithClamp(int& cellsPerLine, const float& cellSi
 
 void UBaseGrid::FillCell(TObjectPtr<UCell> cell, int index) const
 {
-	_gridDataSource->Execute_FillCellIndex(_gridDataSource->_getUObject(), cell, index);
+	_gridItemDataSource->Execute_FillCellIndex(_gridItemDataSource->_getUObject(), cell, index);
 }
 
 

@@ -19,7 +19,7 @@ void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world)
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _rows; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));
 			FillCell(cell, _rows * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
@@ -46,7 +46,7 @@ void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world)
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _columns; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));
 			FillCell(cell, _columns * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
