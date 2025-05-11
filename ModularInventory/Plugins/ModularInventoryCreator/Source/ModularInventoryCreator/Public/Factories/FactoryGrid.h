@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Inventory/GridStructure.h"
+#include "Inventory/Grid/BaseGridStructure.h"
 #include "Inventory/Grid/ScrollableGrid.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "FactoryGrid.generated.h"
@@ -18,12 +18,12 @@ class MODULARINVENTORYCREATOR_API UFactoryGrid : public UGameInstanceSubsystem
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Factory|Grid")
-	UBaseGrid* CreateGrid(TSubclassOf<UGridStructure> gridStructure);
+	UBaseGrid* CreateGrid(UCanvasPanel* canvas, TSubclassOf<UBaseGridStructure> gridStructure);
 
 private:
 
-	TObjectPtr<UGrid> ReturnGrid(const UGridStructure& gridStructure) const;
-	TObjectPtr<UScrollableGrid> ReturnScrollableGrid(const UGridStructure& gridStructure) const;
+	TObjectPtr<UGrid> ReturnGrid(UCanvasPanel* canvas, const UBaseGridStructure& gridStructure) const;
+	TObjectPtr<UScrollableGrid> ReturnScrollableGrid(UCanvasPanel* canvas, const UBaseGridStructure& gridStructure) const;
 	
 	GENERATED_BODY()
 };

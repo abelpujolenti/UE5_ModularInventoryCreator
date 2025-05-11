@@ -4,16 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Grid.h"
-#include "../Private/Interfaces/IScrollable.h"
+#include "Interfaces/IScrollable.h"
 #include "ScrollableGrid.generated.h"
 
 /**
  * 
  */
 class UScrollBox;
-class UScroll;
+class UBaseScrollBar;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTest, float, number);
+template<typename TKey, typename TValue>
+class ObserverMap;
 
 UCLASS(Blueprintable)
 class MODULARINVENTORYCREATOR_API UScrollableGrid : public UBaseGrid, public IIScrollable
@@ -21,47 +22,62 @@ class MODULARINVENTORYCREATOR_API UScrollableGrid : public UBaseGrid, public IIS
 	friend class UFactoryGrid;
 	
 public:
-	virtual void Scroll(float deltaDistance) override;
+
+	virtual void Scroll_Implementation(float deltaDistance) override;
 	
-	virtual EGridOrientation GetOrientation() const override;
-	
-	virtual float GetLength() const override;
-	
-	virtual float GetMaximumDisplacement() const override;
+	virtual EGridOrientation GetOrientation_Implementation() const override;
+
+	virtual float GetWidth_Implementation() const override;
+	virtual float GetHeight_Implementation() const override;
+	virtual float GetLength_Implementation() const override;
+
+	virtual FVector2D GetPivot_Implementation() const override;
+	virtual float GetMaximumDisplacement_Implementation() const override;
+	virtual ObserverMap<EScrollKeys, float>* const UScrollableGrid::GetScrollObserver() const override;
+
+	virtual ~UScrollableGrid() override;
 
 protected:
 
-	virtual void InitializeGrid(const UGridStructure& gridStructure) override;
+	virtual void InitializeGrid(const UBaseGridStructure& gridStructure) override;
+
+	void InitScroll();
 
 	virtual void InstantiateGrid() override;
+
+	virtual void SetGridDataSource(TSubclassOf<UBaseItemDataSource> gridDataSource) override;
+	void CalculateVerticalDisplacement() const;
+	void CalculateHorizontalDisplacement() const;
 
 	virtual void InstantiateWidgets() override;
 
 	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void ScrollVertical(float deltaDistance);
+	virtual void ScrollHorizontal(float deltaDistance);
 
-	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition,	const int& minYBounds,
-		int& currentYPosition) override;
+	virtual void CreateVerticalGrid(const TObjectPtr<UWorld>& world) override;	
+	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world) override;
+
+	UPROPERTY()
+	TObjectPtr<UCanvasPanel> _clippingCanvas = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<USizeBox> _clippingSizeBox = nullptr;
 	
-	virtual void CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition,
-		int& currentYPosition) override;
-
-	UPROPERTY()
-	TObjectPtr<UScrollBox> _scrollBox = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<UCanvasPanelSlot> _scrollBoxSlot = nullptr;
-	
-	UPROPERTY()
 	int _extraLines;
-	
-	UPROPERTY()
-	TObjectPtr<UScroll> _scroll = nullptr;
 
-	UPROPERTY(BlueprintAssignable, Category = "Test")
-	FTest _test;
+	float _scrollDistanceMultiplier;
+	float _displacement;
+	float _minScrollDisplacement {0};
+	float _maxScrollDisplacement;
 
-	UFUNCTION(BlueprintCallable, Category = "Test")
-	void CallMe(float currentOffset);
+	std::function<void(float)> _scrollFunction;
+
+	std::function<float()> _getLengthFunction;
+
+	std::function<void()> _calculateDisplacementFunction;
+
+	ObserverMap<EScrollKeys, float>* _scrollObserver = nullptr;
 
 private:	
 	

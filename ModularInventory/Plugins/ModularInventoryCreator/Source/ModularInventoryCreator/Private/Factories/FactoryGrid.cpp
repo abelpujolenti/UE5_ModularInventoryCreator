@@ -2,21 +2,24 @@
 
 #include "Factories/FactoryGrid.h"
 
-UBaseGrid* UFactoryGrid::CreateGrid(TSubclassOf<UGridStructure> gridStructureClass)
-{
-	UGridStructure* gridStructure = NewObject<UGridStructure>(GetTransientPackage(), gridStructureClass);
+#include "Components/CanvasPanel.h"
+#include "Inventory/Scroll/BaseScrollBar.h"
 
-	check(gridStructure);
+UBaseGrid* UFactoryGrid::CreateGrid(UCanvasPanel* canvas, TSubclassOf<UBaseGridStructure> gridStructureClass)
+{
+	UBaseGridStructure* gridStructure {NewObject<UBaseGridStructure>(GetTransientPackage(), gridStructureClass)};
+
+	checkf(gridStructure, TEXT("A BaseGridStructure class misses"));
 	
 	if (gridStructure->isScrollable)
 	{
-		return ReturnScrollableGrid(*gridStructure); 
+		return ReturnScrollableGrid(canvas, *gridStructure); 
 	}
 
-	return ReturnGrid(*gridStructure);
+	return ReturnGrid(canvas, *gridStructure);
 }
 
-TObjectPtr<UGrid> UFactoryGrid::ReturnGrid(const UGridStructure& gridStructure) const
+TObjectPtr<UGrid> UFactoryGrid::ReturnGrid(UCanvasPanel* canvas, const UBaseGridStructure& gridStructure) const
 {	
 	TObjectPtr<UWorld> world {GetWorld()};
 	
@@ -24,16 +27,33 @@ TObjectPtr<UGrid> UFactoryGrid::ReturnGrid(const UGridStructure& gridStructure) 
 
 	grid->InitializeGrid(gridStructure);
 
+	canvas->AddChildToCanvas(grid);
+
 	return grid;
 }
 
-TObjectPtr<UScrollableGrid> UFactoryGrid::ReturnScrollableGrid(const UGridStructure& gridStructure) const
+TObjectPtr<UScrollableGrid> UFactoryGrid::ReturnScrollableGrid(UCanvasPanel* canvas, const UBaseGridStructure& gridStructure) const
 {
 	TObjectPtr<UWorld> world {GetWorld()};
 	
 	TObjectPtr<UScrollableGrid> scrollableGrid {CreateWidget<UScrollableGrid>(world, UScrollableGrid::StaticClass())};
 
 	scrollableGrid->InitializeGrid(gridStructure);
+
+	if (gridStructure.hasScrollBar)
+	{
+		UBaseScrollBarProperties* scrollBarProperties {NewObject<UBaseScrollBarProperties>(GetTransientPackage(), gridStructure.scrollBarClass)};
+
+		checkf(scrollBarProperties, TEXT("A BaseScrollBarProperties class misses"));
+		
+		TObjectPtr<UBaseScrollBar> scrollBar {CreateWidget<UBaseScrollBar>(scrollableGrid, UBaseScrollBar::StaticClass())};
+
+		scrollBar->InitializeScrollBar(*scrollBarProperties, scrollableGrid);
+
+		canvas->AddChildToCanvas(scrollBar);
+	}
+
+	canvas->AddChildToCanvas(scrollableGrid);
 
 	return scrollableGrid;
 }

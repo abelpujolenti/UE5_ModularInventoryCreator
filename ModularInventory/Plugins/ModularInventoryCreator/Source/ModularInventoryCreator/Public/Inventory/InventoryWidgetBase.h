@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryWidgetBase.generated.h"
 
+class UCanvasPanel;
 /**
  * 
  */
@@ -18,6 +19,9 @@ public:
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
 #endif
+
+protected:
+	virtual void InstantiateWidgets() PURE_VIRTUAL(UInventoryWidgetBase::InstantiateWidgets);
 	
 private:	
 	GENERATED_BODY()

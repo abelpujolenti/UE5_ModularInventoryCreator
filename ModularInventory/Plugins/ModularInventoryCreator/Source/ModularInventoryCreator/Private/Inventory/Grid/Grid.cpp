@@ -6,14 +6,20 @@
 #include "Components/SizeBox.h"
 #include "Interfaces/IGridItemDataSource.h"
 
-void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPosition, const int& minYBounds, int& currentYPosition)
+void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world)
 {
+	int minXBounds = _gridPadding.Left;
+	int currentXPosition = minXBounds + _cellLeftMargin;
+
+	int minYBounds = _gridPadding.Top;
+	int currentYPosition = minYBounds + _cellTopMargin;
+	
 	for (int i = 0; i < _columns; ++i)
 	{		
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _rows; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));
 			FillCell(cell, _rows * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
@@ -27,14 +33,20 @@ void UGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world, int& currentXPos
 	}
 }
 
-void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world, const int& minXBounds, int& currentXPosition, int& currentYPosition)
-{		
+void UGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world)
+{
+	int minXBounds = _gridPadding.Left;
+	int currentXPosition = minXBounds + _cellLeftMargin;
+
+	int minYBounds = _gridPadding.Top;
+	int currentYPosition = minYBounds + _cellTopMargin;
+	
 	for (int i = 0; i < _rows; ++i)
 	{		
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _columns; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridDataSource->Execute_GetCellClass(_gridDataSource->_getUObject()));
+			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));
 			FillCell(cell, _columns * i + j);
 			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(cell));
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
