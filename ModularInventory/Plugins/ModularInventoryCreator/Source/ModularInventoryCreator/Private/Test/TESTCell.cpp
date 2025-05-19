@@ -10,7 +10,14 @@ void UTESTCell::OnClick()
 	_textBlock->SetText(_text);
 }
 
-void UTESTCell::SetText(FText text) const
+void UTESTCell::SetText(FText text)
 {
+	SetVisibility(ESlateVisibility::Visible);
 	_textBlock->SetText(text);
+}
+
+void UTESTCell::Clear()
+{
+	SetVisibility(ESlateVisibility::Visible);
+	_textBlock->SetText(FText::FromString(""));
 }

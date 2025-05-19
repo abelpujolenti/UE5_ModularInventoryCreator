@@ -17,7 +17,9 @@ public:
 
 	virtual void OnClick() override;
 
-	void SetText(FText text) const;
+	void SetText(FText text);
+
+	virtual void Clear() override;
 	
 private:
 

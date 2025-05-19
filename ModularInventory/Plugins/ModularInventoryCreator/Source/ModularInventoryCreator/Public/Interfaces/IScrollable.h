@@ -13,7 +13,7 @@ enum EScrollKeys
 	MAXIMUM_DISPLACEMENT
 };
 
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, BlueprintType)
 class UIScrollable : public UInterface
 {
 	GENERATED_BODY()
@@ -24,22 +24,25 @@ class MODULARINVENTORYCREATOR_API IIScrollable
 
 public:
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ResetScroll();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Scroll(float deltaDistance);
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	FVector2D GetPivot() const;	
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	EGridOrientation GetOrientation() const;
 	
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetWidth() const;	
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetHeight() const;	
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetLength() const;
-
-	UFUNCTION(BlueprintNativeEvent)
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetMaximumDisplacement() const;
 	
 	virtual ObserverMap<EScrollKeys, float>* const GetScrollObserver() const = 0;

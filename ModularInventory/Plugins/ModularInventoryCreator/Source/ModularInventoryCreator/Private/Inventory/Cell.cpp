@@ -22,3 +22,18 @@ FVector2D UCell::GetCellSize() const
 {
 	return _cellSize;
 }
+
+void UCell::SetGridIndex(int gridIndex)
+{
+	_gridIndex = gridIndex;
+}
+
+int UCell::GetGridIndex() const
+{
+	return _gridIndex;
+}
+
+void UCell::Hide()
+{
+	SetVisibility(ESlateVisibility::Hidden);
+}

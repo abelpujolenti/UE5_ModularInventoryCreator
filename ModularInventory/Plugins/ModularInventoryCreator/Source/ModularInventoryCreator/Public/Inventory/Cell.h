@@ -24,6 +24,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cell")
 	virtual void OnClick() PURE_VIRTUAL(UCell::OnClick);
 
+	UFUNCTION(BlueprintCallable, Category = "Cell")
+	void SetGridIndex(int gridIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Cell")
+	int GetGridIndex() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Cell")
+	virtual void Clear() PURE_VIRTUAL(UCell::Clear);
+
+	UFUNCTION(BlueprintCallable, Category = "Cell")
+	void Hide();
+
 protected:
 
 	virtual void NativeOnInitialized() override;
@@ -34,6 +46,8 @@ protected:
 	FVector2D _cellSize;
 	
 private:
+
+	int _gridIndex;
 	
 	GENERATED_BODY()
 };

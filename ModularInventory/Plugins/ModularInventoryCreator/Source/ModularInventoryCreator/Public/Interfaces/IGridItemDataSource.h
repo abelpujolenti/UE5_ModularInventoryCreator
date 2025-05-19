@@ -15,14 +15,17 @@ class MODULARINVENTORYCREATOR_API IIGridItemDataSource
 {
 public:
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int GetItemsCount();
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	TSubclassOf<UCell> GetCellClass();
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void FillCellIndex(UCell* cell, int index);
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void HasToHideCellIfEmpty(bool hasToHideCellIfEmpty);
 
 private:
 	GENERATED_BODY()	
