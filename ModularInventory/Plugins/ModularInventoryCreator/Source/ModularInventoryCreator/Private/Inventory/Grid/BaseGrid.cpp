@@ -304,7 +304,6 @@ void UBaseGrid::FillCell(TObjectPtr<UCell> cell, int index) const
 	_gridItemDataSource->Execute_FillCellIndex(_gridItemDataSource->_getUObject(), cell, index);
 }
 
-
 #if WITH_EDITOR
 
 void UBaseGrid::OnDesignerChanged(const FDesignerChangedEventArgs& EventArgs)

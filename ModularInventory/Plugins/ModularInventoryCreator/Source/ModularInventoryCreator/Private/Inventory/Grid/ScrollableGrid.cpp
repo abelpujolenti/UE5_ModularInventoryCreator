@@ -59,6 +59,8 @@ void UScrollableGrid::InitScroll()
 {
 	if (_gridOrientation == EGridOrientation::VERTICAL)
 	{
+		_totalCells = (_columns + _extraLines) * _rows;
+		
 		_scrollFunction = [&](float deltaDistance)
 		{
 			ScrollHorizontal(deltaDistance);
@@ -78,6 +80,8 @@ void UScrollableGrid::InitScroll()
 		
 		return;
 	}
+
+	_totalCells = (_rows + _extraLines) * _columns;
 
 	_scrollFunction = [&](float deltaDistance)
 	{
@@ -160,7 +164,8 @@ void UScrollableGrid::InstantiateWidgets()
 	Super::InstantiateWidgets();
 
 	_clippingSizeBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
-	_canvas->AddChildToCanvas(_clippingSizeBox);
+	TObjectPtr<UCanvasPanelSlot> canvasPanelSlot {Cast<UCanvasPanelSlot>(_canvas->AddChildToCanvas(_clippingSizeBox))};
+	FVector2D canvasPanelSlotPosition {canvasPanelSlot->GetPosition()};
 
 	_clippingSizeBox->SetRenderTranslation({_gridPadding.Left, _gridPadding.Top});
 
@@ -172,15 +177,27 @@ void UScrollableGrid::InstantiateWidgets()
 	_clippingSizeBox->AddChild(_clippingCanvas);
 
 	//_clippingCanvas->SetClipping(EWidgetClipping::ClipToBounds);
+
+	float halfExtraLines = _extraLines / 2;
+
+	if (_gridOrientation == EGridOrientation::VERTICAL)
+	{
+		float cellHeight = _cellTopMargin + _cellSize.Y + _cellBottomMargin;
+		_scrollBuffer = cellHeight * halfExtraLines;
+		_minimumScrollPosition = canvasPanelSlotPosition.Y - _scrollBuffer;
+		_maximumScrollPosition = canvasPanelSlotPosition.Y + canvasPanelSlot->GetSize().Y + _scrollBuffer;
+		return;
+	}
+
+	float cellWidth = _cellLeftMargin + _cellSize.X + _cellRightMargin;
+	_scrollBuffer = cellWidth * halfExtraLines;
+	_minimumScrollPosition = canvasPanelSlotPosition.X - _scrollBuffer;
+	_maximumScrollPosition = canvasPanelSlotPosition.X + canvasPanelSlot->GetSize().X + _scrollBuffer;
 }
 
-FReply UScrollableGrid::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void UScrollableGrid::ResetScroll_Implementation()
 {
-	float wheelData {InMouseEvent.GetWheelDelta()};
-	
-	Execute_Scroll(this, wheelData);
-	
-	return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
+	Execute_Scroll(this, -_displacement);
 }
 
 void UScrollableGrid::Scroll_Implementation(float deltaDistance)
@@ -193,45 +210,12 @@ void UScrollableGrid::Scroll_Implementation(float deltaDistance)
 
 	_displacement = FMath::Clamp(_displacement, _maxScrollDisplacement, 0);
 
+	UDebugManager::DebugMessage(FString::Printf(TEXT("Max Scroll Displacement: %f\n"), _maxScrollDisplacement));
+	UDebugManager::DebugMessage(FString::Printf(TEXT("Displacement: %f"), _displacement));
+
 	_scrollFunction(_displacement - lastScrollOffset);
 
 	_scrollObserver->SetValue(DISPLACEMENT, _displacement);
-	
-	/*UDebugManager::DebugMessage(FString::Printf(TEXT("DeltaDistance: %f\n"), deltaDistance));
-	UDebugManager::DebugMessage(FString::Printf(TEXT("LastScrollOffset: %f"), lastScrollOffset));
-	UDebugManager::DebugMessage(FString::Printf(TEXT("CurrentScrollOffset: %f"), _displacement));
-	UDebugManager::DebugMessage(FString::Printf(TEXT("MaxDisplacement: %f"), _maxScrollDisplacement));*/
-}
-
-void UScrollableGrid::ScrollVertical(float deltaDistance)
-{
-	for (int i = 0; i < _rows + _extraLines; ++i)
-	{
-		for (int j = 0; j < _columns; ++j)
-		{
-			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot {Cast<UCanvasPanelSlot>(_cellGrid[i][j]->Slot)};
-
-			FVector2D position {canvasPanelSlot->GetPosition()};
-
-			canvasPanelSlot->SetPosition(FVector2D(position.X, position.Y + deltaDistance));
-		}
-	}	
-	
-}
-
-void UScrollableGrid::ScrollHorizontal(float deltaDistance)
-{
-	for (int i = 0; i < _columns + _extraLines; ++i)
-	{
-		for (int j = 0; j < _rows; ++j)
-		{
-			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot {Cast<UCanvasPanelSlot>(_cellGrid[i][j]->Slot)};
-
-			FVector2D position {canvasPanelSlot->GetPosition()};
-
-			canvasPanelSlot->SetPosition(FVector2D(position.X + deltaDistance, position.Y));
-		}
-	}	
 }
 
 EGridOrientation UScrollableGrid::GetOrientation_Implementation() const
@@ -274,9 +258,10 @@ void UScrollableGrid::CreateVerticalGrid(const TObjectPtr<UWorld>& world)
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _rows; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));
-			FillCell(cell, _rows * i + j);
-			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_clippingCanvas->AddChild(cell));
+			TObjectPtr<UCell> cell {CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()))};
+			cell->SetGridIndex(_rows * i + j);
+			FillCell(cell, cell->GetGridIndex());
+			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot {Cast<UCanvasPanelSlot>(_clippingCanvas->AddChild(cell))};
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);
 			newLine.Add(cell);
@@ -298,9 +283,10 @@ void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world)
 		TArray<TObjectPtr<UCell>> newLine;
 		for (int j = 0; j < _columns; ++j)
 		{
-			TObjectPtr<UCell> cell = CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()));			
-			FillCell(cell, _columns * i + j);
-			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot = Cast<UCanvasPanelSlot>(_clippingCanvas->AddChildToCanvas(cell));
+			TObjectPtr<UCell> cell {CreateWidget<UCell>(world, _gridItemDataSource->Execute_GetCellClass(_gridItemDataSource->_getUObject()))};
+			cell->SetGridIndex(_columns * i + j);
+			FillCell(cell, cell->GetGridIndex());
+			TObjectPtr<UCanvasPanelSlot> canvasPanelSlot {Cast<UCanvasPanelSlot>(_clippingCanvas->AddChildToCanvas(cell))};
 			canvasPanelSlot->SetPosition(FVector2D(currentXPosition, currentYPosition));
 			canvasPanelSlot->SetSize(_cellSize);	
 			newLine.Add(cell);
@@ -310,4 +296,123 @@ void UScrollableGrid::CreateHorizontalGrid(const TObjectPtr<UWorld>& world)
 		currentXPosition = _cellLeftMargin;
 		currentYPosition += _cellTopMargin + _cellSize.Y + _cellBottomMargin;
 	}
+}
+
+FReply UScrollableGrid::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	float wheelData {InMouseEvent.GetWheelDelta()};
+	
+	Execute_Scroll(this, wheelData);
+	
+	return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
+}
+
+void UScrollableGrid::ScrollVertical(float deltaDistance)
+{
+	float extraBuffer {CalculateExtraBuffer()};
+	
+	for (int i = 0; i < _rows + _extraLines; ++i)
+	{
+		for (int j = 0; j < _columns; ++j)
+		{
+			TObjectPtr<UCell> cell {_cellGrid[i][j]};
+			
+			TObjectPtr<UCanvasPanelSlot> cellSlot {Cast<UCanvasPanelSlot>(cell->Slot)};
+
+			FVector2D position {cellSlot->GetPosition()};
+
+			position.Y = CalculateCellPosition(cell, deltaDistance, position.Y, extraBuffer);
+
+			cellSlot->SetPosition(position);
+		}
+	}
+}
+
+void UScrollableGrid::ScrollHorizontal(float deltaDistance)
+{
+	float extraBuffer {CalculateExtraBuffer()};
+	
+	for (int i = 0; i < _columns + _extraLines; ++i)
+	{
+		for (int j = 0; j < _rows; ++j)
+		{
+			TObjectPtr<UCell> cell {_cellGrid[i][j]};
+			
+			TObjectPtr<UCanvasPanelSlot> cellSlot {Cast<UCanvasPanelSlot>(cell->Slot)};
+
+			FVector2D position {cellSlot->GetPosition()};
+
+			position.X = CalculateCellPosition(cell, deltaDistance, position.X, extraBuffer);
+
+			cellSlot->SetPosition(position);
+		}
+	}
+}
+
+float UScrollableGrid::CalculateExtraBuffer() const
+{
+	if (_displacement > -_scrollBuffer)
+	{
+		return -_scrollBuffer - _displacement;
+	}
+	
+	if (_displacement < _maxScrollDisplacement + _scrollBuffer)
+	{
+		return _maxScrollDisplacement + _scrollBuffer - _displacement;
+	}
+
+	return 0;
+}
+
+float UScrollableGrid::CalculateCellPosition(TObjectPtr<UCell> cell, float deltaDistance, float currentPosition, float extraBuffer) const
+{	
+	if (_displacement == _minScrollDisplacement && deltaDistance <= 0 ||
+		_displacement == _maxScrollDisplacement && deltaDistance >= 0)
+	{
+		return currentPosition;
+	}
+	
+	float nextPosition {currentPosition + deltaDistance};
+
+	float minimumLimitPosition = _minimumScrollPosition;
+	float maximumLimitPosition = _maximumScrollPosition;
+
+	minimumLimitPosition -= extraBuffer;
+	maximumLimitPosition -= extraBuffer;
+	
+	if (nextPosition >= minimumLimitPosition && nextPosition <= maximumLimitPosition)
+	{
+		return nextPosition;
+	}	
+
+	if (nextPosition < minimumLimitPosition)
+	{
+		cell->SetGridIndex(cell->GetGridIndex() + _totalCells);		
+		FillCell(cell, cell->GetGridIndex());
+		return maximumLimitPosition - (minimumLimitPosition - nextPosition);
+	}
+
+	cell->SetGridIndex(cell->GetGridIndex() - _totalCells);
+	FillCell(cell, cell->GetGridIndex());
+	return minimumLimitPosition + std::fmod(nextPosition, maximumLimitPosition);
+
+	/*if (nextPosition < minimumLimitPosition)
+	{
+		cell->SetGridIndex(cell->GetGridIndex() + _totalCells);
+	}
+	else
+	{
+		cell->SetGridIndex(cell->GetGridIndex() - _totalCells);
+	}
+
+	FillCell(cell, cell->GetGridIndex());
+
+	float rangeWrapped = std::fmod(nextPosition - minimumLimitPosition, maximumLimitPosition - minimumLimitPosition);
+
+	if(rangeWrapped < 0)
+	{
+		rangeWrapped += maximumLimitPosition - minimumLimitPosition;
+	}
+	
+	return rangeWrapped + minimumLimitPosition;*/
 }

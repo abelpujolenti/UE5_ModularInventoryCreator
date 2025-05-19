@@ -19,5 +19,22 @@ void UBaseItemDataSource::FillCellIndex_Implementation(UCell* cell, int index)
 {
 	UTESTCell* myCell = Cast<UTESTCell>(cell);
 
-	myCell->SetText(_items[index % _items.Num()]);
+	if (index < _items.Num())
+	{
+		myCell->SetText(_items[index]);
+		return;
+	}
+
+	if (_hasToHideCellIfEmpty)
+	{
+		myCell->Hide();
+		return;
+	}
+
+	myCell->Clear();
+}
+
+void UBaseItemDataSource::HasToHideCellIfEmpty_Implementation(bool hasToHideCellIfEmpty)
+{
+	_hasToHideCellIfEmpty = hasToHideCellIfEmpty;
 }

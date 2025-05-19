@@ -24,12 +24,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Grid|Cell")
 	virtual void FillCellIndex_Implementation(UCell* cell, int index) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Grid|Cell")
+	virtual void HasToHideCellIfEmpty_Implementation(bool hasToHideCellIfEmpty) override;
+
 protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Grid|Content")
 	TArray<FText> _items;
 
 private:
+
+	UPROPERTY(EditAnywhere, Category = "Grid|Cell")
+	bool _hasToHideCellIfEmpty;
 	
 	GENERATED_BODY()
 };
